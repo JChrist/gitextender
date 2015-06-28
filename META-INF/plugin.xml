@@ -2,7 +2,7 @@
     <id>gr.jchrist.gitextender</id>
     <name>Git Extender</name>
     <version>0.1</version>
-    <vendor email="io.christod@gmail.com" url="https://github.com/JChrist">JChrist</vendor>
+    <vendor email="io.christod@gmail.com" url="https://github.com/JChrist/gitextender">JChrist</vendor>
 
     <description><![CDATA[
       Git Extender adds an option to <em>Update All</em>
@@ -10,7 +10,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
-      Added support for all jetbrains products
+      Initial Version
     ]]>
     </change-notes>
 
@@ -35,7 +35,8 @@
 
     <actions>
         <!-- Add your actions here -->
-        <action id="GitExtender.UpdateAll" class="GitExtenderUpdateAll" text="Git Extender -&gt; Update All"
+        <action id="GitExtender.UpdateAll" class="gr.jchrist.gitextender.GitExtenderUpdateAll"
+                text="Git Extender -&gt; Update All"
                 description="Update all locally tracked branches of all modules in the project">
             <add-to-group group-id="Git.Menu" anchor="first"/>
             <keyboard-shortcut keymap="$default" first-keystroke="alt T"/>
