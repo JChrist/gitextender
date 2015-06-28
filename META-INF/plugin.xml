@@ -1,0 +1,45 @@
+<idea-plugin version="2">
+    <id>gr.jchrist.gitextender</id>
+    <name>Git Extender</name>
+    <version>0.1</version>
+    <vendor email="io.christod@gmail.com" url="https://github.com/JChrist">JChrist</vendor>
+
+    <description><![CDATA[
+      Git Extender adds an option to <em>Update All</em>
+      locally tracked branches of all git roots in the current project
+    ]]></description>
+
+    <change-notes><![CDATA[
+      Added support for all jetbrains products
+    ]]>
+    </change-notes>
+
+    <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
+    <idea-version since-build="141"/>
+
+    <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.vcs</depends>
+    <depends>Git4Idea</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+    </extensions>
+
+    <application-components>
+        <!-- Add your application components here -->
+    </application-components>
+
+    <project-components>
+        <!-- Add your project components here -->
+    </project-components>
+
+    <actions>
+        <!-- Add your actions here -->
+        <action id="GitExtender.UpdateAll" class="GitExtenderUpdateAll" text="Git Extender -&gt; Update All"
+                description="Update all locally tracked branches of all modules in the project">
+            <add-to-group group-id="Git.Menu" anchor="first"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="alt T"/>
+        </action>
+    </actions>
+
+</idea-plugin>
