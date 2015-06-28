@@ -2,7 +2,7 @@
     <id>gr.jchrist.gitextender</id>
     <name>Git Extender</name>
     <version>0.1</version>
-    <vendor email="io.christod@gmail.com" url="https://github.com/JChrist">JChrist</vendor>
+    <vendor email="io.christod@gmail.com" url="https://github.com/JChrist/gitextender">JChrist</vendor>
 
     <description><![CDATA[
       Git Extender adds an option to <em>Update All</em>
