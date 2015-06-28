@@ -1,3 +1,5 @@
+package gr.jchrist.gitextender;
+
 import com.intellij.dvcs.repo.VcsRepositoryManager;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
