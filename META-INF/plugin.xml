@@ -1,7 +1,7 @@
 <idea-plugin version="2">
     <id>gr.jchrist.gitextender</id>
     <name>Git Extender</name>
-    <version>0.1</version>
+    <version>0.2</version>
     <vendor email="io.christod@gmail.com" url="https://github.com/JChrist/gitextender">JChrist</vendor>
 
     <description><![CDATA[
