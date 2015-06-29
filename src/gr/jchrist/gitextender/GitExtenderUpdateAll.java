@@ -100,14 +100,29 @@ public class GitExtenderUpdateAll extends AnAction {
         String currBranch = repo.getCurrentBranchName();
         GitCommandResult result;
 
-        //stash before updating
-        result = git.stashSave(repo, "GitExtender_Stashing");
-        if (!result.success()) {
-            showErrorNotification("Git Extender failed to stash changes",
-                    "Git Extender failed to stash changes" +
-                            " on repo:" + repo.getPresentableUrl() +
-                            ", because of the error: " + result.getErrorOutputAsJoinedString());
+        //check if we require stashing
+        boolean stagedChanges = false;
+        boolean unstagedChanges = false;
+        try {
+            stagedChanges = GitUtil.hasLocalChanges(true, repo.getProject(), repo.getRoot());
+            unstagedChanges = GitUtil.hasLocalChanges(false, repo.getProject(), repo.getRoot());
+        } catch (Exception e) {
+            logger.error("exception while trying to find if there were any staged/unstaged changes", e);
+            showErrorNotification("Git Extender update failed",
+                    "Git Extender failed to update repo: " + repo.getPresentableUrl() + ", " +
+                            "because it could not identify if there were any staged/unstaged changes. The exception was: " + e.getMessage());
             return;
+        }
+        if (stagedChanges || unstagedChanges) {
+            //there are changes that we need to stash
+            result = git.stashSave(repo, "GitExtender_Stashing");
+            if (!result.success()) {
+                showErrorNotification("Git Extender failed to stash changes",
+                        "Git Extender failed to stash changes" +
+                                " on repo:" + repo.getPresentableUrl() +
+                                ", because of the error: " + result.getErrorOutputAsJoinedString());
+                return;
+            }
         }
 
         for (GitBranchTrackInfo info : repo.getBranchTrackInfos()) {
@@ -159,17 +174,19 @@ public class GitExtenderUpdateAll extends AnAction {
         checkoutHandler.addParameters(currBranch);
         git.runCommand(checkoutHandler);
 
-        //now unstash
-        git.stashPop(repo, new GitLineHandlerListener() {
-            public void onLineAvailable(String line, Key outputType) {
-            }
+        //now unstash, if we had stashed any changes
+        if (stagedChanges || unstagedChanges) {
+            git.stashPop(repo, new GitLineHandlerListener() {
+                public void onLineAvailable(String line, Key outputType) {
+                }
 
-            public void processTerminated(int exitCode) {
-            }
+                public void processTerminated(int exitCode) {
+                }
 
-            public void startFailed(Throwable exception) {
-            }
-        });
+                public void startFailed(Throwable exception) {
+                }
+            });
+        }
     }
 
     @NotNull
