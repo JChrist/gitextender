@@ -1,18 +1,18 @@
 <idea-plugin version="2">
     <id>gr.jchrist.gitextender</id>
     <name>Git Extender</name>
-    <version>0.1.1</version>
+    <version>0.1.2</version>
     <vendor email="io.christod@gmail.com" url="https://github.com/JChrist/gitextender">JChrist</vendor>
 
     <description><![CDATA[
       Git Extender adds an option to <em>Update All</em>
-      locally tracked branches of all git roots in the current project
+      local branches tracking a remote for all git roots in the current project
     ]]></description>
 
     <change-notes><![CDATA[
         <ul>
-          <li>Fixed jdk 1.7 compatibility</li>
-          <li>Fixed stashing/popping when no modified files exist</li>
+          <li>Using GitFetcher to fetch and prune remotes and show results</li>
+          <li>This release is dedicated to Pippo: "keep waking me up!"</li>
         </ul>
     ]]>
     </change-notes>

@@ -1,3 +1,6 @@
+## 0.1.2 (2015-07-17)
+-- Using GitFetcher to fetch and prune remotes and show results before starting the update 
+
 ## 0.1.1 (2015-06-29)
 -- Changed jdk to 1.7, so that the plugin works with IDEA running with 1.7 jdk
 -- Added check if any staged or unstaged changes exist in each repository, in order to stash only if needed

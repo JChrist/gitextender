@@ -19,10 +19,12 @@ import git4idea.repo.GitBranchTrackInfo;
 import git4idea.repo.GitRemote;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
+import git4idea.update.GitFetcher;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -77,7 +79,7 @@ public class GitExtenderUpdateAll extends AnAction {
         for (final GitRepository repo : repositories) {
             new Task.Backgroundable(repo.getProject(), "Updating " + repo.getPresentableUrl(), false) {
                 public void run(@NotNull ProgressIndicator indicator) {
-                    updateRepository(repo);
+                    updateRepository(repo, indicator);
                     if (countDown.decrementAndGet() <= 0) {
                         showInfoNotification("Update Completed", "Git Extender updated all projects");
                     }
@@ -86,7 +88,7 @@ public class GitExtenderUpdateAll extends AnAction {
         }
     }
 
-    private void updateRepository(@NotNull GitRepository repo) {
+    private void updateRepository(@NotNull GitRepository repo, @NotNull ProgressIndicator indicator) {
         //check if repo is valid for updating
         if (!canRepoBeUpdated(repo)) {
             return;
@@ -101,8 +103,8 @@ public class GitExtenderUpdateAll extends AnAction {
         GitCommandResult result;
 
         //check if we require stashing
-        boolean stagedChanges = false;
-        boolean unstagedChanges = false;
+        boolean stagedChanges;
+        boolean unstagedChanges;
         try {
             stagedChanges = GitUtil.hasLocalChanges(true, repo.getProject(), repo.getRoot());
             unstagedChanges = GitUtil.hasLocalChanges(false, repo.getProject(), repo.getRoot());
@@ -113,6 +115,7 @@ public class GitExtenderUpdateAll extends AnAction {
                             "because it could not identify if there were any staged/unstaged changes. The exception was: " + e.getMessage());
             return;
         }
+
         if (stagedChanges || unstagedChanges) {
             //there are changes that we need to stash
             result = git.stashSave(repo, "GitExtender_Stashing");
@@ -125,67 +128,67 @@ public class GitExtenderUpdateAll extends AnAction {
             }
         }
 
-        for (GitBranchTrackInfo info : repo.getBranchTrackInfos()) {
-            GitRemoteBranch remoteBranch = info.getRemoteBranch();
-            //checkout branch
-            GitCommand checkout = GitCommand.CHECKOUT;
-            GitLineHandler checkoutHandler = new GitLineHandler(repo.getProject(), repo.getRoot(), checkout);
-            checkoutHandler.addParameters(info.getLocalBranch().getName());
-            result = git.runCommand(checkoutHandler);
-            if (!result.success()) {
-                showErrorNotification("Git Extender failed to checkout branch",
-                        "Git Extender failed to checkout branch " + info.getLocalBranch() +
-                                " on repo:" + repo.getPresentableUrl() +
-                                ", because of the error: " + result.getErrorOutputAsJoinedString());
-                continue;
-            }
-
+        try {
+            //fetch and prune remote
             //git fetch origin
-            GitCommand fetch = GitCommand.FETCH;
-            GitLineHandler fetchHandler = new GitLineHandler(repo.getProject(), repo.getRoot(), fetch);
-            fetchHandler.addParameters(remote.getName());
-            fetchHandler.addParameters(remoteBranch.getNameForRemoteOperations());
-            result = git.runCommand(fetchHandler);
-            if (!result.success()) {
-                showErrorNotification("Git Extender update of repo " + repo.getPresentableUrl() + " failed",
-                        "Git Extender failed to fetch remote branch " + remoteBranch.getNameForLocalOperations() +
-                                " on repo " + repo.getPresentableUrl() +
-                                ", because of the error: " + result.getErrorOutputAsJoinedString());
+            boolean fetchResult = new GitFetcher(repo.getProject(), indicator, true).fetchRootsAndNotify(Collections.singleton(repo),
+                    null, true);
+
+            if (!fetchResult) {
+                //git fetcher will have displayed the error
                 return;
             }
 
-            //rebase from remote
-            GitCommand rebase = GitCommand.REBASE;
-            GitLineHandler rebaseHandler = new GitLineHandler(repo.getProject(), repo.getRoot(), rebase);
-            rebaseHandler.addParameters(remoteBranch.getNameForLocalOperations());
-            result = git.runCommand(rebaseHandler);
-            if (!result.success()) {
-                showErrorNotification("Git Extender failed to rebase branch",
-                        "Git Extender failed to rebase branch " + info.getLocalBranch() +
-                                " on remote: " + remoteBranch.getNameForLocalOperations() +
-                                " on repo:" + repo.getPresentableUrl() +
-                                ", because of the error: " + result.getErrorOutputAsJoinedString());
+            for (GitBranchTrackInfo info : repo.getBranchTrackInfos()) {
+                GitRemoteBranch remoteBranch = info.getRemoteBranch();
+                //checkout branch
+                GitCommand checkout = GitCommand.CHECKOUT;
+                GitLineHandler checkoutHandler = new GitLineHandler(repo.getProject(), repo.getRoot(), checkout);
+                checkoutHandler.addParameters(info.getLocalBranch().getName());
+                result = git.runCommand(checkoutHandler);
+                if (!result.success()) {
+                    showErrorNotification("Git Extender failed to checkout branch",
+                            "Git Extender failed to checkout branch " + info.getLocalBranch() +
+                                    " on repo:" + repo.getPresentableUrl() +
+                                    ", because of the error: " + result.getErrorOutputAsJoinedString());
+                    continue;
+                }
+
+                //rebase from remote
+                GitCommand rebase = GitCommand.REBASE;
+                GitLineHandler rebaseHandler = new GitLineHandler(repo.getProject(), repo.getRoot(), rebase);
+                rebaseHandler.addParameters(remoteBranch.getNameForLocalOperations());
+                result = git.runCommand(rebaseHandler);
+                if (!result.success()) {
+                    showErrorNotification("Git Extender failed to rebase branch",
+                            "Git Extender failed to rebase branch " + info.getLocalBranch() +
+                                    " on remote: " + remoteBranch.getNameForLocalOperations() +
+                                    " on repo:" + repo.getPresentableUrl() +
+                                    ", because of the error: " + result.getErrorOutputAsJoinedString());
+                    //rebase failed, stop here
+                    return;
+                }
             }
-        }
 
-        //in any case, checkout again the branch that the developer had before
-        GitCommand checkout = GitCommand.CHECKOUT;
-        GitLineHandler checkoutHandler = new GitLineHandler(repo.getProject(), repo.getRoot(), checkout);
-        checkoutHandler.addParameters(currBranch);
-        git.runCommand(checkoutHandler);
+            //in any case, checkout again the branch that the developer had before
+            GitCommand checkout = GitCommand.CHECKOUT;
+            GitLineHandler checkoutHandler = new GitLineHandler(repo.getProject(), repo.getRoot(), checkout);
+            checkoutHandler.addParameters(currBranch);
+            git.runCommand(checkoutHandler);
+        } finally {
+            //now unstash, if we had stashed any changes
+            if (stagedChanges || unstagedChanges) {
+                git.stashPop(repo, new GitLineHandlerListener() {
+                    public void onLineAvailable(String line, Key outputType) {
+                    }
 
-        //now unstash, if we had stashed any changes
-        if (stagedChanges || unstagedChanges) {
-            git.stashPop(repo, new GitLineHandlerListener() {
-                public void onLineAvailable(String line, Key outputType) {
-                }
+                    public void processTerminated(int exitCode) {
+                    }
 
-                public void processTerminated(int exitCode) {
-                }
-
-                public void startFailed(Throwable exception) {
-                }
-            });
+                    public void startFailed(Throwable exception) {
+                    }
+                });
+            }
         }
     }
 
