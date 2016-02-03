@@ -1,7 +1,7 @@
 <idea-plugin version="2">
     <id>gr.jchrist.gitextender</id>
     <name>Git Extender</name>
-    <version>0.1.2</version>
+    <version>0.1.3</version>
     <vendor email="io.christod@gmail.com" url="https://github.com/JChrist/gitextender">JChrist</vendor>
 
     <description><![CDATA[
@@ -11,8 +11,7 @@
 
     <change-notes><![CDATA[
         <ul>
-          <li>Using GitFetcher to fetch and prune remotes and show results</li>
-          <li>This release is dedicated to Pippo: "keep waking me up!"</li>
+          <li>Local branches will tried to be merged with remote ones using fast-forward only</li>
         </ul>
     ]]>
     </change-notes>
