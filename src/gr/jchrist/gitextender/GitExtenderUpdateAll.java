@@ -16,13 +16,10 @@ import git4idea.GitRemoteBranch;
 import git4idea.GitUtil;
 import git4idea.commands.*;
 import git4idea.repo.GitBranchTrackInfo;
-import git4idea.repo.GitRemote;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 import git4idea.update.GitFetcher;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -34,7 +31,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class GitExtenderUpdateAll extends AnAction {
     public static final String GROUP_ID = "Git Extender";
-    private static final Logger logger = LoggerFactory.getLogger(GitExtenderUpdateAll.class);
 
     public static void showErrorNotification(@NotNull String title, @NotNull String content) {
         showNotification(title, content, NotificationType.ERROR);
@@ -57,11 +53,16 @@ public class GitExtenderUpdateAll extends AnAction {
             }
 
             GitPlatformFacade gitPlatformFacade = ServiceManager.getService(project, GitPlatformFacade.class);
-            VcsRepositoryManager vcsManager = ServiceManager.getService(project, VcsRepositoryManager.class);
+            //VcsRepositoryManager vcsManager = ServiceManager.getService(project, VcsRepositoryManager.class);
+            VcsRepositoryManager vcsManager = project.getComponent(VcsRepositoryManager.class);
+            if (vcsManager == null) {
+                showErrorNotification("Update Failed", "Git Extender could not find any repository manager in the current project");
+                return;
+            }
 
             GitRepositoryManager manager = new GitRepositoryManager(project, gitPlatformFacade, vcsManager);
             List<GitRepository> repositoryList = manager.getRepositories();
-            logger.info("repository list is: {}", repositoryList);
+            manager.updateAllRepositories();
             if (repositoryList.isEmpty()) {
                 showErrorNotification("Update Failed", "Git Extender could not find any repositories in the current project");
                 return;
@@ -69,7 +70,6 @@ public class GitExtenderUpdateAll extends AnAction {
 
             updateRepositories(repositoryList);
         } catch (Exception | Error e) {
-            logger.error("exception caught", e);
             showErrorNotification("Git Extender Update Failed", "Gi Extender failed to update the project due to exception: " + e);
         }
     }
@@ -94,8 +94,6 @@ public class GitExtenderUpdateAll extends AnAction {
             return;
         }
 
-        //find remote
-        GitRemote remote = getRemoteForRepo(repo);
         //find git service
         Git git = ServiceManager.getService(repo.getProject(), Git.class);
 
@@ -109,10 +107,11 @@ public class GitExtenderUpdateAll extends AnAction {
             stagedChanges = GitUtil.hasLocalChanges(true, repo.getProject(), repo.getRoot());
             unstagedChanges = GitUtil.hasLocalChanges(false, repo.getProject(), repo.getRoot());
         } catch (Exception e) {
-            logger.error("exception while trying to find if there were any staged/unstaged changes", e);
             showErrorNotification("Git Extender update failed",
-                    "Git Extender failed to update repo: " + repo.getPresentableUrl() + ", " +
-                            "because it could not identify if there were any staged/unstaged changes. The exception was: " + e.getMessage());
+                    "Git repo: " + repo.getPresentableUrl() + "<br>" +
+                            "Error: Git Extender failed to update git repo, " +
+                            "because it could not identify if there were any staged/unstaged changes. " +
+                            "The exception was: " + e.getMessage());
             return;
         }
 
@@ -121,9 +120,8 @@ public class GitExtenderUpdateAll extends AnAction {
             result = git.stashSave(repo, "GitExtender_Stashing");
             if (!result.success()) {
                 showErrorNotification("Git Extender failed to stash changes",
-                        "Git Extender failed to stash changes" +
-                                " on repo:" + repo.getPresentableUrl() +
-                                ", because of the error: " + result.getErrorOutputAsJoinedString());
+                        "Git repo: " + repo.getPresentableUrl() + "<br>" +
+                                "Error: " + result.getErrorOutputAsJoinedString());
                 return;
             }
         }
@@ -131,13 +129,16 @@ public class GitExtenderUpdateAll extends AnAction {
         try {
             //fetch and prune remote
             //git fetch origin
-            boolean fetchResult = new GitFetcher(repo.getProject(), indicator, true).fetchRootsAndNotify(Collections.singleton(repo),
-                    null, true);
+            boolean fetchResult = new GitFetcher(repo.getProject(), indicator, true)
+                    .fetchRootsAndNotify(Collections.singleton(repo), null, true);
 
             if (!fetchResult) {
                 //git fetcher will have displayed the error
                 return;
             }
+
+            //update the repo after fetch, in order to re-sync locals and remotes
+            repo.update();
 
             for (GitBranchTrackInfo info : repo.getBranchTrackInfos()) {
                 GitRemoteBranch remoteBranch = info.getRemoteBranch();
@@ -148,33 +149,37 @@ public class GitExtenderUpdateAll extends AnAction {
                 result = git.runCommand(checkoutHandler);
                 if (!result.success()) {
                     showErrorNotification("Git Extender failed to checkout branch",
-                            "Git Extender failed to checkout branch " + info.getLocalBranch() +
-                                    " on repo:" + repo.getPresentableUrl() +
-                                    ", because of the error: " + result.getErrorOutputAsJoinedString());
+                            "Local branch: " + info.getLocalBranch().getName() + "<br>" +
+                                    "Git repo:" + repo.getPresentableUrl() + "<br>" +
+                                    "Error: " + result.getErrorOutputAsJoinedString());
                     continue;
                 }
 
-                //rebase from remote
-                GitCommand rebase = GitCommand.REBASE;
-                GitLineHandler rebaseHandler = new GitLineHandler(repo.getProject(), repo.getRoot(), rebase);
-                rebaseHandler.addParameters(remoteBranch.getNameForLocalOperations());
-                result = git.runCommand(rebaseHandler);
+                //do NOT rebase from remote after all :) just merge with -ff only
+                GitCommand merge = GitCommand.MERGE;
+                GitLineHandler mergeHandler = new GitLineHandler(repo.getProject(), repo.getRoot(), merge);
+                mergeHandler.addParameters("--ff-only");
+                mergeHandler.addParameters(remoteBranch.getNameForLocalOperations());
+                result = git.runCommand(mergeHandler);
                 if (!result.success()) {
-                    showErrorNotification("Git Extender failed to rebase branch",
-                            "Git Extender failed to rebase branch " + info.getLocalBranch() +
-                                    " on remote: " + remoteBranch.getNameForLocalOperations() +
-                                    " on repo:" + repo.getPresentableUrl() +
-                                    ", because of the error: " + result.getErrorOutputAsJoinedString());
-                    //rebase failed, stop here
-                    return;
+                    showErrorNotification("Git Extender failed to merge (with fast-forward only) branch",
+                            "Local branch: " + info.getLocalBranch().getName() + "<br>" +
+                                    "Remote branch: " + remoteBranch.getNameForLocalOperations() + "<br>" +
+                                    "Git repo:" + repo.getPresentableUrl() + "<br>" +
+                                    "Please perform the merge (which needs conflict resolution) manually for this branch, " +
+                                    "by checking it out, merging the changes and resolving the conflicts");
+                    //merge failed, nothing was done, just carry on to other branches
                 }
             }
 
-            //in any case, checkout again the branch that the developer had before
+            //now that we're finished, checkout again the branch that the developer had before
             GitCommand checkout = GitCommand.CHECKOUT;
             GitLineHandler checkoutHandler = new GitLineHandler(repo.getProject(), repo.getRoot(), checkout);
             checkoutHandler.addParameters(currBranch);
             git.runCommand(checkoutHandler);
+
+            //update the repo after all updates, in order to re-sync locals / remotes and changed files
+            repo.update();
         } finally {
             //now unstash, if we had stashed any changes
             if (stagedChanges || unstagedChanges) {
@@ -190,28 +195,6 @@ public class GitExtenderUpdateAll extends AnAction {
                 });
             }
         }
-    }
-
-    @NotNull
-    private GitRemote getRemoteForRepo(@NotNull GitRepository repo) {
-        //which remote are we going to use? if only one remote, use that
-        if (repo.getRemotes().size() == 1) {
-            return repo.getRemotes().iterator().next();
-        }
-        //if current branch is tracking a remote, get that
-        GitBranchTrackInfo trackInfo = GitUtil.getTrackInfoForCurrentBranch(repo);
-        if (trackInfo != null) {
-            return trackInfo.getRemote();
-        }
-        //otherwise, either use the first, or one named origin
-        GitRemote remote = repo.getRemotes().iterator().next();
-        for (GitRemote rem : repo.getRemotes()) {
-            if (rem.getName().equals("origin")) {
-                remote = rem;
-                break;
-            }
-        }
-        return remote;
     }
 
     private boolean canRepoBeUpdated(@NotNull GitRepository repo) {
