@@ -1,3 +1,6 @@
+## 0.1.3 (2016-02-13)
+-- Changed pull method from rebase to merge, with the --ff-only flag (fast-forward only)
+
 ## 0.1.2 (2015-07-17)
 -- Using GitFetcher to fetch and prune remotes and show results before starting the update 
 
