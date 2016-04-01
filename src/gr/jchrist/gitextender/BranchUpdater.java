@@ -3,7 +3,6 @@ package gr.jchrist.gitextender;
 import com.intellij.history.Label;
 import com.intellij.history.LocalHistory;
 import com.intellij.history.LocalHistoryAction;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.util.text.StringUtil;
@@ -212,13 +211,17 @@ public class BranchUpdater {
         /*final UpdateInfoTree updateInfoTree = ProjectLevelVcsManagerEx.getInstanceEx(project).
                 showUpdateProjectInfo(updatedFiles, text, actionInfo, false);*/
 
-        final UpdateInfoTree updateInfoTree = new UpdateInfoTree(contentManager, project, updatedFiles, text, actionInfo) {
+        final UpdateInfoTree updateInfoTree = new UpdateInfoTree(contentManager, project, updatedFiles, text, actionInfo);
+        //todo the update info tree is not quite an _update_ info tree
+        //files changed in branches other than the one checked out will not show correct changes
+        //however, leave the actions as is, this should be fixed in a future version (in a way that I don't know yet :)
+        /*{
             @Override
             protected void addActionsTo(DefaultActionGroup group) {
                 //do not add any actions, since they will be wrong anyway
                 //the changed files might be in another branch than the one checked out, so no real diffing can be done
             }
-        };
+        };*/
 
         updateInfoTree.setBefore(before);
         updateInfoTree.setAfter(after);
