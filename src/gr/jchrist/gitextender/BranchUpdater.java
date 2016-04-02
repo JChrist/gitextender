@@ -48,6 +48,7 @@ public class BranchUpdater {
     private Label before;
     private LocalHistoryAction myLocalHistoryAction;
     private UpdatedFiles updatedFiles;
+    private BranchUpdateResult branchUpdateResult;
 
     public BranchUpdater(Git git, GitRepository repo, String repoName, GitBranchTrackInfo info) {
         this.git = git;
@@ -56,6 +57,7 @@ public class BranchUpdater {
 
         this.remoteBranchName = info.getRemoteBranch().getNameForLocalOperations();
         this.localBranchName = info.getLocalBranch().getName();
+        this.branchUpdateResult = new BranchUpdateResult();
     }
 
     @NotNull
@@ -82,37 +84,71 @@ public class BranchUpdater {
     }
 
     public BranchUpdateResult update() {
-        GitCommandResult checkoutResult = checkout();
-        if (checkoutResult == null || !checkoutResult.success()) {
-            return new BranchUpdateResult(checkoutResult, null);
+        checkout();
+        if (!branchUpdateResult.isCheckoutSuccess()) {
+            return this.branchUpdateResult;
         }
 
-        GitCommandResult mergeResult = merge();
-        return new BranchUpdateResult(checkoutResult, mergeResult);
+        merge();
+        return this.branchUpdateResult;
     }
 
-    public GitCommandResult checkout() {
+    protected void checkout() {
         GitCommand checkout = GitCommand.CHECKOUT;
         GitLineHandler checkoutHandler = new GitLineHandler(repo.getProject(), repo.getRoot(), checkout);
         checkoutHandler.addParameters(localBranchName);
-        return git.runCommand(checkoutHandler);
+        branchUpdateResult.checkoutResult = git.runCommand(checkoutHandler);
     }
 
-    public GitCommandResult merge() {
+    protected void merge() {
+        //let's prepare for the merge: find what files we have now
         prepareMerge();
 
+        mergeFastForwardOnly();
+        if (!branchUpdateResult.isMergeFastForwardSuccess()) {
+            //todo this should be controlled with a user setting flag
+            //because it might be dangerous. Leave it off for now
+            //mergeAbortIfFailed();
+        }
+
+        if (branchUpdateResult.isMergeSuccess()) {
+            afterMerge();
+        }
+    }
+
+    protected void mergeFastForwardOnly() {
         //do NOT rebase from remote after all :) just merge with -ff only
         GitCommand merge = GitCommand.MERGE;
         GitLineHandler mergeHandler = new GitLineHandler(repo.getProject(), repo.getRoot(), merge);
         mergeHandler.addParameters("--ff-only");
         mergeHandler.addParameters(remoteBranchName);
-        GitCommandResult mergeResult = git.runCommand(mergeHandler);
+        branchUpdateResult.mergeFastForwardResult = git.runCommand(mergeHandler);
+    }
 
-        if (mergeResult.success()) {
-            afterMerge();
+    protected void mergeAbortIfFailed() {
+        //try simple merging, abort if failed
+        GitCommand merge = GitCommand.MERGE;
+        GitLineHandler mergeHandler = new GitLineHandler(repo.getProject(), repo.getRoot(), merge);
+        mergeHandler.addParameters(remoteBranchName);
+        branchUpdateResult.mergeSimpleResult = git.runCommand(mergeHandler);
+
+        if (branchUpdateResult.isMergeSuccess()) {
+            return;
         }
 
-        return mergeResult;
+        abortMerge();
+    }
+
+    protected void abortMerge() {
+        //we failed, now abort the process
+        GitCommand abort = GitCommand.MERGE;
+        GitLineHandler abortHandler = new GitLineHandler(repo.getProject(), repo.getRoot(), abort);
+        abortHandler.addParameters("--abort");
+        branchUpdateResult.abortResult = git.runCommand(abortHandler);
+
+        if (!branchUpdateResult.isAbortSucceeded()) {
+            //We have really messed up! What can I do now?
+        }
     }
 
     protected void prepareMerge() {
@@ -252,34 +288,75 @@ public class BranchUpdater {
         return changes.getContentManager();
     }
 
+    @NotNull
     public String getLocalBranchName() {
         return localBranchName;
     }
 
+    @NotNull
     public String getRemoteBranchName() {
         return remoteBranchName;
     }
 
-    public static class BranchUpdateResult {
-        public final GitCommandResult checkoutResult;
-        public final GitCommandResult mergeResult;
+    @NotNull
+    public BranchUpdateResult getBranchUpdateResult() {
+        return branchUpdateResult;
+    }
 
-        public BranchUpdateResult(GitCommandResult checkoutResult, GitCommandResult mergeResult) {
-            this.checkoutResult = checkoutResult;
-            this.mergeResult = mergeResult;
-        }
+    public static class BranchUpdateResult {
+        protected GitCommandResult checkoutResult;
+        protected GitCommandResult mergeFastForwardResult;
+        protected GitCommandResult mergeSimpleResult;
+        protected GitCommandResult abortResult;
 
         public boolean isSuccess() {
-            return checkoutResult != null && checkoutResult.success() &&
-                    mergeResult != null && mergeResult.success();
+            //we're successful if we checked out and
+            //we merged either by fast-forward, or with simple merge
+            return isCheckoutSuccess() && isMergeSuccess();
         }
 
-        public boolean wasCheckoutError() {
-            return checkoutResult == null || !checkoutResult.success();
+        public boolean isCheckoutSuccess() {
+            return checkoutResult != null && checkoutResult.success();
         }
 
-        public boolean wasMergeError() {
-            return mergeResult == null || !mergeResult.success();
+        public boolean isCheckoutError() {
+            return !isCheckoutSuccess();
+        }
+
+        public boolean isMergeSuccess() {
+            return isMergeFastForwardSuccess() || isMergeSimpleSuccess();
+        }
+
+        public boolean isMergeError() {
+            return !isMergeSuccess();
+        }
+
+        public boolean isMergeFastForwardSuccess() {
+            return mergeFastForwardResult != null && mergeFastForwardResult.success();
+        }
+
+        public boolean isMergeSimpleSuccess() {
+            return mergeSimpleResult != null && mergeSimpleResult.success();
+        }
+
+        public boolean isAbortSucceeded() {
+            return abortResult != null && abortResult.success();
+        }
+
+        public GitCommandResult getCheckoutResult() {
+            return checkoutResult;
+        }
+
+        public GitCommandResult getMergeFastForwardResult() {
+            return mergeFastForwardResult;
+        }
+
+        public GitCommandResult getMergeSimpleResult() {
+            return mergeSimpleResult;
+        }
+
+        public GitCommandResult getAbortResult() {
+            return abortResult;
         }
     }
 }
