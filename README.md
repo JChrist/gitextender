@@ -12,5 +12,5 @@ tracked remote using fast-forward only, then it will not be updated and an error
 case, the update must be performed manually for the reported branch
 
 After updating a branch, if there were any file changes, they will be displayed in IntelliJ Version Control tab.
-Currently, only a list of file changes (updated, created, removed) will be displayed, without the possibility for viewing
-a diff of the update.
+Currently, the correct list of file changes (updated, created, removed) will be displayed. However, when performing
+a diff for files in a branch other than the currently checked out, the diff will most probably be incorrect 
