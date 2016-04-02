@@ -165,16 +165,19 @@ public class GitExtenderUpdateAll extends AnAction {
                 if (!result.isSuccess()) {
                     //where was the error?
                     //in checkout ?
-                    if (result.wasCheckoutError()) {
+                    if (result.isCheckoutError()) {
                         showErrorNotification("Git Extender failed to checkout branch",
                                 "Local branch: " + updater.getLocalBranchName() + "<br>" +
                                         "Git repo:" + repoName + "<br>" +
                                         "Error: " + result.checkoutResult.getErrorOutputAsJoinedString());
-                    } else if (result.wasMergeError()) {
-                        showErrorNotification("Git Extender failed to merge (with fast-forward only) branch",
+                    } else if (result.isMergeError()) {
+                        showErrorNotification("Git Extender failed to merge branch with fast-forward only",
                                 "Local branch: " + updater.getLocalBranchName() + "<br>" +
                                         "Remote branch: " + updater.getRemoteBranchName() + "<br>" +
                                         "Git repo:" + repoName + "<br>" +
+                                        //TODO: this is related to enabling simply merge with aborting if failed
+                                /*"Merge was " + (result.isAbortSucceeded() ? "aborted." :
+                                        "NOT aborted! mas You will need to resolve the merge conflicts!") + "<br>" +*/
                                         "Please perform the merge (which may need conflict resolution) manually for this branch, " +
                                         "by checking it out, merging the changes and resolving any conflicts");
                     }
