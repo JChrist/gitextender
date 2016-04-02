@@ -1,3 +1,9 @@
+Changelog
+---------
+
+## 0.2.0 (2016-04-02)
+-- Keeping track of updated files, as results to be displayed after updating
+
 ## 0.1.3 (2016-02-13)
 -- Changed pull method from rebase to merge, with the --ff-only flag (fast-forward only)
 
