@@ -15,3 +15,11 @@ intellij {
     plugins 'git4idea'
     pluginName 'gitextender'
 }
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile 'org.assertj:assertj-core:3.6.1'
+}
