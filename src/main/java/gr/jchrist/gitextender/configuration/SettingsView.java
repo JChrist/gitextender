@@ -30,12 +30,6 @@ public class SettingsView implements SearchableConfigurable {
         return DIALOG_TITLE;
     }
 
-    @Nullable
-    @Override
-    public Runnable enableSearch(String s) {
-        return null;
-    }
-
     @Nls
     @Override
     public String getDisplayName() {
@@ -75,17 +69,26 @@ public class SettingsView implements SearchableConfigurable {
 
     @Override
     public void disposeUIResources() {
-
+        mainPanel = null;
+        attemptMergeAbort = null;
     }
 
-    public void fill(GitExtenderSettings gitExtenderSettings) {
+    protected void fill(GitExtenderSettings gitExtenderSettings) {
         attemptMergeAbort.setSelected(gitExtenderSettings == null || gitExtenderSettings.getAttemptMergeAbort() == null ? false :
                 gitExtenderSettings.getAttemptMergeAbort());
     }
 
-    public GitExtenderSettings save() {
+    protected GitExtenderSettings save() {
         GitExtenderSettings ss = new GitExtenderSettings();
         ss.attemptMergeAbort = attemptMergeAbort != null && attemptMergeAbort.isSelected();
         return ss;
+    }
+
+    JPanel getMainPanel() {
+        return mainPanel;
+    }
+
+    JCheckBox getAttemptMergeAbort() {
+        return attemptMergeAbort;
     }
 }
