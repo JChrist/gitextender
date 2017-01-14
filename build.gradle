@@ -1,0 +1,17 @@
+//group 'gr.jchrist'
+//version '0.3-SNAPSHOT'
+buildscript {
+    repositories {
+        maven { url 'http://dl.bintray.com/jetbrains/intellij-plugin-service' }
+    }
+}
+
+plugins {
+    id "org.jetbrains.intellij" version "0.2.0"
+}
+
+intellij {
+    version 'LATEST-EAP-SNAPSHOT' //the default value
+    plugins 'git4idea'
+    pluginName 'gitextender'
+}
