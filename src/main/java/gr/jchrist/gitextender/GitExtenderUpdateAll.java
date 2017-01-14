@@ -14,7 +14,6 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.vcsUtil.VcsImplUtil;
-import git4idea.GitPlatformFacade;
 import git4idea.GitUtil;
 import git4idea.commands.Git;
 import git4idea.commands.GitCommand;
@@ -24,7 +23,9 @@ import git4idea.repo.GitBranchTrackInfo;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 import git4idea.update.GitFetcher;
+import gr.jchrist.gitextender.configuration.GitExtenderSettings;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
@@ -36,6 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class GitExtenderUpdateAll extends AnAction {
     public static final String GROUP_ID = "Git Extender";
+    private GitExtenderSettings gitExtenderSettings;
 
     public static void showErrorNotification(@NotNull String title, @NotNull String content) {
         showNotification(title, content, NotificationType.ERROR);
@@ -49,6 +51,7 @@ public class GitExtenderUpdateAll extends AnAction {
         Notifications.Bus.notify(new Notification(GROUP_ID, title, content, type));
     }
 
+    @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
         try {
             Project project = event.getProject();
@@ -57,15 +60,13 @@ public class GitExtenderUpdateAll extends AnAction {
                 return;
             }
 
-            GitPlatformFacade gitPlatformFacade = ServiceManager.getService(project, GitPlatformFacade.class);
-            //VcsRepositoryManager vcsManager = ServiceManager.getService(project, VcsRepositoryManager.class);
-            VcsRepositoryManager vcsManager = project.getComponent(VcsRepositoryManager.class);
-            if (vcsManager == null) {
-                showErrorNotification("Update Failed", "Git Extender could not find any repository manager in the current project");
+            GitRepositoryManager manager = getGitRepositoryManager(project);
+
+            if (manager == null) {
+                showErrorNotification("Update Failed", "Git Extender could not initialize the project's repository manager");
                 return;
             }
 
-            GitRepositoryManager manager = new GitRepositoryManager(project, gitPlatformFacade, vcsManager);
             List<GitRepository> repositoryList = manager.getRepositories();
             manager.updateAllRepositories();
             if (repositoryList.isEmpty()) {
@@ -79,11 +80,28 @@ public class GitExtenderUpdateAll extends AnAction {
         }
     }
 
+    @Nullable
+    private static GitRepositoryManager getGitRepositoryManager(@NotNull Project project) {
+        try {
+            VcsRepositoryManager vcsManager = project.getComponent(VcsRepositoryManager.class);
+            if (vcsManager == null) {
+                return null;
+            }
+
+            return new GitRepositoryManager(project, vcsManager);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     private void updateRepositories(@NotNull Project project, @NotNull List<GitRepository> repositories) {
         //get an access token for changing the repositories
         final AccessToken accessToken = DvcsUtil.workingTreeChangeStarted(project);
 
         final AtomicInteger countDown = new AtomicInteger(repositories.size());
+
+        //get the settings to find out the selected options
+        gitExtenderSettings = GitExtenderSettings.getInstance();
 
         for (final GitRepository repo : repositories) {
             final String repoName = VcsImplUtil.getShortVcsRootName(repo.getProject(), repo.getRoot());
@@ -157,7 +175,7 @@ public class GitExtenderUpdateAll extends AnAction {
             repo.update();
 
             for (final GitBranchTrackInfo info : repo.getBranchTrackInfos()) {
-                final BranchUpdater updater = new BranchUpdater(git, repo, repoName, info);
+                final BranchUpdater updater = new BranchUpdater(git, repo, repoName, info, gitExtenderSettings);
 
                 BranchUpdater.BranchUpdateResult result = updater.update();
 
@@ -166,20 +184,27 @@ public class GitExtenderUpdateAll extends AnAction {
                     //where was the error?
                     //in checkout ?
                     if (result.isCheckoutError()) {
-                        showErrorNotification("Git Extender failed to checkout branch",
-                                "Local branch: " + updater.getLocalBranchName() + "<br>" +
-                                        "Git repo:" + repoName + "<br>" +
-                                        "Error: " + result.checkoutResult.getErrorOutputAsJoinedString());
+                        String error = "Local branch: " + updater.getLocalBranchName() + "<br>" +
+                                "Git repo:" + repoName + "<br>" +
+                                "Error: " + result.checkoutResult.getErrorOutputAsJoinedString();
+                        showErrorNotification("Git Extender failed to checkout branch", error);
                     } else if (result.isMergeError()) {
-                        showErrorNotification("Git Extender failed to merge branch with fast-forward only",
-                                "Local branch: " + updater.getLocalBranchName() + "<br>" +
-                                        "Remote branch: " + updater.getRemoteBranchName() + "<br>" +
-                                        "Git repo:" + repoName + "<br>" +
-                                        //TODO: this is related to enabling simply merge with aborting if failed
-                                /*"Merge was " + (result.isAbortSucceeded() ? "aborted." :
-                                        "NOT aborted! mas You will need to resolve the merge conflicts!") + "<br>" +*/
-                                        "Please perform the merge (which may need conflict resolution) manually for this branch, " +
-                                        "by checking it out, merging the changes and resolving any conflicts");
+                        String error = "Local branch: " + updater.getLocalBranchName() + "<br>" +
+                                "Remote branch: " + updater.getRemoteBranchName() + "<br>" +
+                                "Git repo:" + repoName + "<br>";
+                        if (Boolean.TRUE.equals(gitExtenderSettings.getAttemptMergeAbort())) {
+                            error += "Merge was ";
+                            if (result.isAbortSucceeded()) {
+                                error += "aborted.";
+                            } else {
+                                error += "NOT aborted! You will need to resolve the merge conflicts!";
+                            }
+                        } else {
+                            error += "Please perform the merge (which may need conflict resolution) " +
+                                    "manually for this branch, " +
+                                    "by checking it out, merging the changes and resolving any conflicts";
+                        }
+                        showErrorNotification("Git Extender failed to merge branch with fast-forward only", error);
                     }
                 }
             }

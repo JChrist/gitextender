@@ -1,7 +1,7 @@
 <idea-plugin version="2">
     <id>gr.jchrist.gitextender</id>
     <name>Git Extender</name>
-    <version>0.2.0</version>
+    <version>0.3.0</version>
     <vendor email="io.christod@gmail.com" url="https://github.com/JChrist/gitextender">JChrist</vendor>
 
     <description><![CDATA[
@@ -9,21 +9,27 @@
         local branches tracking a remote for all git roots in the current project<br/>
         Local branches that will be updated are the branches that exist locally and have been configured
         to track a remote branch.<br/>
-        It *always* fast-forwards commits in remote branches to local branches. If the local branch cannot be merged to the
-        tracked remote using fast-forward only, then it will not be updated and an error notification will be shown. In this
-        case, the update must be performed manually for the reported branch<br/>
-        After updating a branch, if there were any file changes, they will be displayed in IntelliJ Version Control tab.
-        Currently, only a list of file changes (updated, created, removed) will be displayed, without the possibility for viewing
-        a diff of the update.<br/>
-        Many thanks to
-        <strong><u><a href="https://github.com/gsaslis">gsaslis</a></u></strong>
-        and
-        <strong><u><a href="https://github.com/tdakanalis">tdakanalis</a></u></strong>
-        for their feature requests and beta-testing :)
+        It fast-forwards commits in remote branches to local branches.
+        If the local branch cannot be merged to the tracked remote using fast-forward only,
+        then a simple merge will be attempted.
+        If there are conflict errors, it will be aborted and an error notification will be shown.
+        In this case, the update must be performed manually for the reported branch.<br/>
+        After updating a branch, if there were any file changes, they will be displayed in
+        IntelliJ Version Control tab.
+        Currently, the correct list of file changes
+        (updated, created, removed) will be displayed.
+        However, when performing a diff for files in a branch other than the currently checked
+        out, the diff will most probably be incorrect.<br/>
     ]]></description>
 
     <change-notes><![CDATA[
         <ul>
+            <li>
+                0.3.0: Added configuration settings for GitExtender, offering options to control
+                whether it will perform fast-forward-only merges, or if it will attempt simple merge and abort on error
+                Also, instead of starting a thread for each module, it now uses an Executor with as many threads as there
+                are available cores
+            </li>
             <li>
                 0.2.0: Keeping track of updated files, as results to be displayed after updating. ***Requires latest version: 145***
                 The displayed updated files may show invalid/incorrect differences (in the show diff dialog)
@@ -49,6 +55,15 @@ in the current project, using rebase for all local commits and automatic stashin
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
+        <!-- Configuration state service ( persistable settings ) -->
+        <applicationService serviceInterface="gr.jchrist.gitextender.configuration.GitExtenderSettings"
+                            serviceImplementation="gr.jchrist.gitextender.configuration.GitExtenderSettings"/>
+
+        <!-- provider for the configurable instance ( configuration settings ) -->
+        <applicationConfigurable id="GitLabConfigurableProvider"
+                                 provider="gr.jchrist.gitextender.configuration.SettingsConfigurableProvider"/>
+        <projectService serviceInterface="gr.jchrist.gitextender.configuration.ProjectState"
+                        serviceImplementation="gr.jchrist.gitextender.configuration.ProjectState"/>
     </extensions>
 
     <application-components>

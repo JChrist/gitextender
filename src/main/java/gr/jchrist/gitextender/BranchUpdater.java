@@ -27,6 +27,7 @@ import git4idea.commands.GitLineHandler;
 import git4idea.merge.MergeChangeCollector;
 import git4idea.repo.GitBranchTrackInfo;
 import git4idea.repo.GitRepository;
+import gr.jchrist.gitextender.configuration.GitExtenderSettings;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -48,9 +49,12 @@ public class BranchUpdater {
     private Label before;
     private LocalHistoryAction myLocalHistoryAction;
     private UpdatedFiles updatedFiles;
-    private BranchUpdateResult branchUpdateResult;
+    private final BranchUpdateResult branchUpdateResult;
+    private final GitExtenderSettings gitExtenderSettings;
 
-    public BranchUpdater(Git git, GitRepository repo, String repoName, GitBranchTrackInfo info) {
+    public BranchUpdater(
+            Git git, GitRepository repo, String repoName,
+            GitBranchTrackInfo info, GitExtenderSettings gitExtenderSettings) {
         this.git = git;
         this.repo = repo;
         this.repoName = repoName;
@@ -58,6 +62,7 @@ public class BranchUpdater {
         this.remoteBranchName = info.getRemoteBranch().getNameForLocalOperations();
         this.localBranchName = info.getLocalBranch().getName();
         this.branchUpdateResult = new BranchUpdateResult();
+        this.gitExtenderSettings = gitExtenderSettings;
     }
 
     @NotNull
@@ -108,7 +113,9 @@ public class BranchUpdater {
         if (!branchUpdateResult.isMergeFastForwardSuccess()) {
             //todo this should be controlled with a user setting flag
             //because it might be dangerous. Leave it off for now
-            //mergeAbortIfFailed();
+            if (Boolean.TRUE.equals(gitExtenderSettings.getAttemptMergeAbort())) {
+                mergeAbortIfFailed();
+            }
         }
 
         if (branchUpdateResult.isMergeSuccess()) {
@@ -170,11 +177,15 @@ public class BranchUpdater {
 
     protected void afterMerge() {
         //we managed to update the branch, so let's try to get which files were updated
-        gatherChanges();
-        refreshFiles();
-        myLocalHistoryAction.finish();
+        if (branchUpdateResult.isMergeSuccess()) {
+            gatherChanges();
+            refreshFiles();
+            myLocalHistoryAction.finish();
 
-        showUpdatedFiles();
+            showUpdatedFiles();
+        } else {
+            myLocalHistoryAction.finish();
+        }
     }
 
     protected void gatherChanges() {
@@ -304,6 +315,7 @@ public class BranchUpdater {
     }
 
     public static class BranchUpdateResult {
+        protected boolean abortAttempted;
         protected GitCommandResult checkoutResult;
         protected GitCommandResult mergeFastForwardResult;
         protected GitCommandResult mergeSimpleResult;
