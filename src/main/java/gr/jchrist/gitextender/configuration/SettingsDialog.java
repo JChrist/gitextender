@@ -1,6 +1,5 @@
 package gr.jchrist.gitextender.configuration;
 
-import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
@@ -27,7 +26,6 @@ public class SettingsDialog extends DialogWrapper {
     @Nullable
     @Override
     protected ValidationInfo doValidate() {
-        //return settingsView.doValidate();
         return null;
     }
 
@@ -37,11 +35,7 @@ public class SettingsDialog extends DialogWrapper {
         return settingsView.createComponent();
     }
 
-    public boolean isModified() {
-        return settingsView.isModified();
-    }
-
-    public void apply() throws ConfigurationException {
-        settingsView.apply();
+    SettingsView getSettingsView() {
+        return settingsView;
     }
 }
