@@ -23,7 +23,7 @@ hs_err_pid*
 # Ignore Gradle GUI config
 gradle-app.setting
 gradle.properties
-!graddle-wrapper.jar
+!**/gradle-wrapper.jar
 .gradletasknamecache
 
 *~
