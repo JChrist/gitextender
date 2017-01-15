@@ -32,3 +32,6 @@ jacocoTestReport {
         html.enabled true
     }
 }
+
+//specify here that jacoco test report should execute after test
+test { finalizedBy jacocoTestReport }
