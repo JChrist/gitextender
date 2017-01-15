@@ -1,5 +1,3 @@
-//group 'gr.jchrist'
-//version '0.3-SNAPSHOT'
 buildscript {
     repositories {
         maven { url 'http://dl.bintray.com/jetbrains/intellij-plugin-service' }
@@ -12,9 +10,12 @@ plugins {
 
 intellij {
     version 'LATEST-EAP-SNAPSHOT' //the default value
-    plugins 'git4idea'
+    plugins 'git4idea' //comma separated list of plugins to depend on
     pluginName 'gitextender'
 }
+
+group 'gr.jchrist'
+version '0.3-SNAPSHOT'
 
 repositories {
     mavenCentral()
