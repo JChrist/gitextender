@@ -24,3 +24,11 @@ repositories {
 dependencies {
     testCompile 'org.assertj:assertj-core:3.6.1'
 }
+
+apply plugin: 'jacoco'
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        html.enabled true
+    }
+}
