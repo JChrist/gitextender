@@ -1,24 +1,13 @@
 package gr.jchrist.gitextender;
 
-import git4idea.commands.GitCommandResult;
-import junit.framework.TestCase;
+import org.junit.Test;
 
-import java.util.Collections;
-
+import static gr.jchrist.gitextender.TestingUtil.error;
+import static gr.jchrist.gitextender.TestingUtil.success;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class BranchUpdateResultTest extends TestCase {
-    private static final GitCommandResult error =
-            new GitCommandResult(false, 1,
-                    Collections.singletonList("test error output"),
-                    Collections.singletonList("error"),
-                    new Exception("test exception"));
-    private static final GitCommandResult success =
-            new GitCommandResult(true, 0,
-                    Collections.emptyList(),
-                    Collections.singletonList("success"),
-                    null);
-
+public class BranchUpdateResultTest {
+    @Test
     public void testIsSuccess() throws Exception {
         //success by fast forward
         assertThat(new BranchUpdateResult(success, success, null, null).isSuccess()).isTrue();
@@ -38,6 +27,7 @@ public class BranchUpdateResultTest extends TestCase {
         assertThat(new BranchUpdateResult(error, error, error, error).isSuccess()).isFalse();
     }
 
+    @Test
     public void testCheckoutCheck() throws Exception {
         BranchUpdateResult bur = new BranchUpdateResult();
         bur.checkoutResult = success;
@@ -49,6 +39,7 @@ public class BranchUpdateResultTest extends TestCase {
         assertThat(bur.isCheckoutError()).isTrue();
     }
 
+    @Test
     public void testMergeCheck() throws Exception {
         BranchUpdateResult bur = new BranchUpdateResult();
         bur.mergeFastForwardResult = success;
@@ -72,6 +63,7 @@ public class BranchUpdateResultTest extends TestCase {
         assertThat(bur.isMergeError()).isTrue();
     }
 
+    @Test
     public void testAbortCheck() throws Exception {
         BranchUpdateResult bur = new BranchUpdateResult();
 
@@ -84,6 +76,7 @@ public class BranchUpdateResultTest extends TestCase {
         assertThat(bur.isAbortSucceeded()).isTrue();
     }
 
+    @Test
     public void testGets() throws Exception {
         BranchUpdateResult bur = new BranchUpdateResult(success, success, success, success);
         assertThat(bur.getCheckoutResult()).isSameAs(success);

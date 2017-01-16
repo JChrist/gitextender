@@ -1,6 +1,9 @@
 package gr.jchrist.gitextender.configuration;
 
-import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCase;
+import gr.jchrist.gitextender.TestingUtil;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -8,27 +11,38 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author jchrist
  * @since 2017/01/14
  */
-public class ProjectStateTest extends LightPlatformCodeInsightFixtureTestCase {
+public class ProjectStateTest {
+    private TestingUtil.BaseTest base;
     private ProjectState projectState;
 
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
-        projectState = ProjectState.getInstance(myFixture.getProject());
+        base = TestingUtil.getBaseTest();
+        base.setUp();
+        projectState = ProjectState.getInstance(base.getFixture().getProject());
     }
 
-    public void testGetInstance() throws Exception {
-        ProjectState ps = ProjectState.getInstance(myFixture.getProject());
+    @After
+    public void after() throws Exception {
+        base.tearDown();
+    }
+
+    @Test
+    public void getInstance() throws Exception {
+        ProjectState ps = ProjectState.getInstance(base.getFixture().getProject());
         assertThat(ps)
                 .as("unexpected instance retrieved")
                 .isNotNull();
     }
 
+    @Test
     public void testGetState() throws Exception {
         ProjectState.State state = projectState.getState();
         assertThat(state).as("unexpected state returned")
                 .isNotNull();
     }
 
+    @Test
     public void testLoadState() throws Exception {
         ProjectState.State loaded = new ProjectState.State();
         loaded.projectId = 5533232;
@@ -41,6 +55,7 @@ public class ProjectStateTest extends LightPlatformCodeInsightFixtureTestCase {
                 .isEqualToComparingFieldByField(loaded);
     }
 
+    @Test
     public void testGetProjectId() throws Exception {
         final int projectId = 1244221;
         assertThat(projectState.getState()).isNotNull();
@@ -50,6 +65,7 @@ public class ProjectStateTest extends LightPlatformCodeInsightFixtureTestCase {
                 .isEqualTo(projectId);
     }
 
+    @Test
     public void testSetProjectId() throws Exception {
         final int projectId = 4354313;
         assertThat(projectState.getState()).isNotNull();
@@ -59,6 +75,7 @@ public class ProjectStateTest extends LightPlatformCodeInsightFixtureTestCase {
         assertThat(projectState.getProjectId()).isEqualTo(projectId);
     }
 
+    @Test
     public void testGetLastMergedBranch() throws Exception {
         final String lastMergedBranch = "feature/testfeaturehere";
         assertThat(projectState.getState()).isNotNull();
@@ -67,6 +84,7 @@ public class ProjectStateTest extends LightPlatformCodeInsightFixtureTestCase {
         assertThat(projectState.getLastMergedBranch()).isEqualTo(lastMergedBranch);
     }
 
+    @Test
     public void testSetLastMergedBranch() throws Exception {
         final String lastMergedBranch = "feature/testfeaturehere";
         projectState.setLastMergedBranch(lastMergedBranch);

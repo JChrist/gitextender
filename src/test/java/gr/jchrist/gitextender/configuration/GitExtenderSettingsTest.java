@@ -1,6 +1,9 @@
 package gr.jchrist.gitextender.configuration;
 
-import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCase;
+import gr.jchrist.gitextender.TestingUtil;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -8,8 +11,22 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author jchrist
  * @since 2017/01/14
  */
-public class GitExtenderSettingsTest extends LightPlatformCodeInsightFixtureTestCase {
-    public void testGetInstance() throws Exception {
+public class GitExtenderSettingsTest {
+    private TestingUtil.BaseTest base;
+
+    @Before
+    public void before() throws Exception {
+        base = TestingUtil.getBaseTest();
+        base.setUp();
+    }
+
+    @After
+    public void after() throws Exception {
+        base.tearDown();
+    }
+
+    @Test
+    public void getInstance() throws Exception {
         GitExtenderSettings ges = GitExtenderSettings.getInstance();
         assertThat(ges).isNotNull();
 
@@ -17,6 +34,7 @@ public class GitExtenderSettingsTest extends LightPlatformCodeInsightFixtureTest
         assertThat(state).isSameAs(ges);
     }
 
+    @Test
     public void testLoadState() throws Exception {
         GitExtenderSettings ges = new GitExtenderSettings();
         GitExtenderSettings loaded = new GitExtenderSettings();
@@ -29,6 +47,7 @@ public class GitExtenderSettingsTest extends LightPlatformCodeInsightFixtureTest
                 .isEqualToComparingFieldByField(loaded);
     }
 
+    @Test
     public void testGetAttemptMergeAbort() throws Exception {
         GitExtenderSettings ges = new GitExtenderSettings();
         ges.attemptMergeAbort = true;
@@ -37,6 +56,7 @@ public class GitExtenderSettingsTest extends LightPlatformCodeInsightFixtureTest
                 .isTrue();
     }
 
+    @Test
     public void testSetAttemptMergeAbort() throws Exception {
         GitExtenderSettings ges = new GitExtenderSettings();
         ges.setAttemptMergeAbort(true);
