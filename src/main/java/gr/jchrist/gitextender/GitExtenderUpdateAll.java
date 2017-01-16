@@ -51,6 +51,20 @@ public class GitExtenderUpdateAll extends AnAction {
         Notifications.Bus.notify(new Notification(GROUP_ID, title, content, type));
     }
 
+    @Nullable
+    private static GitRepositoryManager getGitRepositoryManager(@NotNull Project project) {
+        try {
+            VcsRepositoryManager vcsManager = project.getComponent(VcsRepositoryManager.class);
+            if (vcsManager == null) {
+                return null;
+            }
+
+            return new GitRepositoryManager(project, vcsManager);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
         try {
@@ -80,20 +94,6 @@ public class GitExtenderUpdateAll extends AnAction {
         }
     }
 
-    @Nullable
-    private static GitRepositoryManager getGitRepositoryManager(@NotNull Project project) {
-        try {
-            VcsRepositoryManager vcsManager = project.getComponent(VcsRepositoryManager.class);
-            if (vcsManager == null) {
-                return null;
-            }
-
-            return new GitRepositoryManager(project, vcsManager);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
     private void updateRepositories(@NotNull Project project, @NotNull List<GitRepository> repositories) {
         //get an access token for changing the repositories
         final AccessToken accessToken = DvcsUtil.workingTreeChangeStarted(project);
@@ -107,11 +107,14 @@ public class GitExtenderUpdateAll extends AnAction {
             final String repoName = VcsImplUtil.getShortVcsRootName(repo.getProject(), repo.getRoot());
             new Task.Backgroundable(repo.getProject(), "Updating " + repoName, false) {
                 public void run(@NotNull ProgressIndicator indicator) {
-                    updateRepository(repo, indicator, repoName);
-                    if (countDown.decrementAndGet() <= 0) {
-                        //the last task finished should clean up, release project changes and show info notification
-                        DvcsUtil.workingTreeChangeFinished(repo.getProject(), accessToken);
-                        showInfoNotification("Update Completed", "Git Extender updated all projects");
+                    try {
+                        updateRepository(repo, indicator, repoName);
+                    } finally {
+                        if (countDown.decrementAndGet() <= 0) {
+                            //the last task finished should clean up, release project changes and show info notification
+                            DvcsUtil.workingTreeChangeFinished(repo.getProject(), accessToken);
+                            showInfoNotification("Update Completed", "Git Extender updated all projects");
+                        }
                     }
                 }
             }.queue();
@@ -177,7 +180,7 @@ public class GitExtenderUpdateAll extends AnAction {
             for (final GitBranchTrackInfo info : repo.getBranchTrackInfos()) {
                 final BranchUpdater updater = new BranchUpdater(git, repo, repoName, info, gitExtenderSettings);
 
-                BranchUpdater.BranchUpdateResult result = updater.update();
+                BranchUpdateResult result = updater.update();
 
                 //let's see if we had any errors
                 if (!result.isSuccess()) {
