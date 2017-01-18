@@ -1,5 +1,7 @@
 package gr.jchrist.gitextender;
 
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture;
 import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCase;
 import git4idea.commands.GitCommandResult;
@@ -40,8 +42,19 @@ public abstract class TestingUtil {
             inner.tearDown();
         }
 
+        @NotNull
         public CodeInsightTestFixture getFixture() {
             return inner.getFixture();
+        }
+
+        @NotNull
+        public Project getProject() {
+            return inner.getProject();
+        }
+
+        @NotNull
+        public Module getModule() {
+            return inner.getModule();
         }
 
         public void invokeTestRunnable(@NotNull Runnable runnable) throws Exception {
@@ -61,6 +74,15 @@ public abstract class TestingUtil {
 
             public CodeInsightTestFixture getFixture() {
                 return myFixture;
+            }
+
+            @Override
+            public Project getProject() {
+                return super.getProject();
+            }
+
+            public Module getModule() {
+                return myModule;
             }
 
             @Override
