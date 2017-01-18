@@ -5,8 +5,6 @@ import com.intellij.dvcs.repo.VcsRepositoryManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.AccessToken;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.vcsUtil.VcsImplUtil;
 import git4idea.repo.GitRepository;
@@ -74,23 +72,10 @@ public class GitExtenderUpdateAll extends AnAction {
 
         //get the settings to find out the selected options
         final GitExtenderSettings settings = GitExtenderSettings.getInstance();
-        repositories.forEach(repo -> {
-            final String repoName = VcsImplUtil.getShortVcsRootName(repo.getProject(), repo.getRoot());
-
-            new Task.Backgroundable(repo.getProject(), "Updating " + repoName, false) {
-                public void run(@NotNull ProgressIndicator indicator) {
-                    RepositoryUpdater repositoryUpdater = new RepositoryUpdater(repo, indicator, repoName, settings);
-                    try {
-                        repositoryUpdater.updateRepository();
-                    } finally {
-                        if (countDown.decrementAndGet() <= 0) {
-                            //the last task finished should clean up, release project changes and show info notification
-                            DvcsUtil.workingTreeChangeFinished(repo.getProject(), accessToken);
-                            NotificationUtil.showInfoNotification("Update Completed", "Git Extender updated all projects");
-                        }
-                    }
-                }
-            }.queue();
-        });
+        repositories.forEach(repo ->
+                new BackgroundableRepoUpdateTask(repo,
+                        VcsImplUtil.getShortVcsRootName(repo.getProject(), repo.getRoot()),
+                        settings, countDown, accessToken)
+                        .queue());
     }
 }
