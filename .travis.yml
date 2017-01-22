@@ -9,4 +9,4 @@ cache:
   directories:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
-scripts: ./gradlew check --stacktrace --info
+script: ./gradlew check --stacktrace --info
