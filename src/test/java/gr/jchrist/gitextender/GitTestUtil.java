@@ -33,11 +33,7 @@ public class GitTestUtil {
 
     public static void cloneRepo(@NotNull String source, @NotNull String destination, boolean bare) {
         cd(source);
-        if (bare) {
-            git("clone --bare -- . " + destination);
-        } else {
-            git("clone -- . " + destination);
-        }
+        git("clone "+(bare ? "--bare " : "") + "-- . " + destination);
     }
 
     @NotNull
@@ -45,9 +41,11 @@ public class GitTestUtil {
             @NotNull Project project, @NotNull String root, @NotNull String remotePath, @NotNull String remoteAccessPath) {
         cd(remotePath);
         git("init --bare");
+        setGitUser();
 
         cloneRepo(remotePath, remoteAccessPath, false);
         cd(remoteAccessPath);
+        setGitUser();
 
         tac("initial_file.txt");
         push();
@@ -62,6 +60,7 @@ public class GitTestUtil {
         GitRepository repo = registerRepo(project, root);
 
         cd(root);
+        setGitUser();
         checkout("develop");
         checkout("master");
 
@@ -77,6 +76,11 @@ public class GitTestUtil {
         GitRepository repository = GitUtil.getRepositoryManager(project).getRepositoryForRoot(file);
         assertNotNull("Couldn't find repository for root " + root, repository);
         return repository;
+    }
+
+    public static void setGitUser() {
+        git("config user.name 'JChrist'");
+        git("config user.email 'j@christ.gr'");
     }
 
     @NotNull
