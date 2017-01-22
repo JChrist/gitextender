@@ -127,28 +127,30 @@ public class RepositoryUpdater {
                                 "Remote branch: " + updater.getRemoteBranchName() + "<br>" +
                                 "Git repo:" + repoName + "<br>" +
                                 "Merge error: ";
-                        if (Boolean.TRUE.equals(settings.getAttemptMergeAbort())) {
-                            error += "Merge was ";
+                        if (Boolean.FALSE.equals(settings.getAttemptMergeAbort()) || result.isAbortSucceeded()) {
                             if (result.isAbortSucceeded()) {
-                                error += "aborted.";
-                            } else {
-                                error += "NOT aborted! You will need to resolve the merge conflicts!";
-                                if (repoChanges) {
-                                    error += " The changes you had on branch: " + currBranch + " were stashed, " +
-                                            "but not un-stashed, due to this merge error. " +
-                                            "After resolving the merge conflict, " +
-                                            "you can revert to the branch you were on " +
-                                            "(e.g. using <em>git checkout " + currBranch + "</em>) " +
-                                            "and then pop the stash (e.g. <em>git stash pop</em>)";
-                                }
-                                failureToAbort = true;
+                                error += "Merge was aborted.<br>";
                             }
-                        } else {
                             error += "Please perform the merge (which may need conflict resolution) " +
                                     "manually for this branch, " +
                                     "by checking it out, merging the changes and resolving any conflicts";
+                        } else {
+                            error += "Merge was NOT aborted! You will need to resolve the merge conflicts!";
+                            if (repoChanges) {
+                                error += " The changes you had on branch: " + currBranch + " were stashed, " +
+                                        "but not un-stashed, due to this merge error. " +
+                                        "After resolving the merge conflict, " +
+                                        "you can revert to the branch you were on " +
+                                        "(e.g. using <em>git checkout " + currBranch + "</em>) " +
+                                        "and then pop the stash (e.g. <em>git stash pop</em>)";
+                            }
+                            failureToAbort = true;
                         }
-                        NotificationUtil.showErrorNotification("Git Extender failed to merge branch with fast-forward only", error);
+                        NotificationUtil.showErrorNotification(
+                                "Git Extender failed to merge branch" +
+                                        (Boolean.TRUE.equals(settings.getAttemptMergeAbort()) ?
+                                                " with fast-forward only" : ""),
+                                error);
                         if (failureToAbort) {
                             return;
                         }
