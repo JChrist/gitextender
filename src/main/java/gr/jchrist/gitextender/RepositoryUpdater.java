@@ -148,7 +148,7 @@ public class RepositoryUpdater {
                         }
                         NotificationUtil.showErrorNotification(
                                 "Git Extender failed to merge branch" +
-                                        (Boolean.TRUE.equals(settings.getAttemptMergeAbort()) ?
+                                        (Boolean.FALSE.equals(settings.getAttemptMergeAbort()) ?
                                                 " with fast-forward only" : ""),
                                 error);
                         if (failureToAbort) {
