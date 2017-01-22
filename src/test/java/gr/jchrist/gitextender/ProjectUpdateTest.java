@@ -87,6 +87,7 @@ public class ProjectUpdateTest {
         logger.info("window is: "+ToolWindowManager.getInstance(base.getProject()).getToolWindow(ToolWindowId.VCS));
 
         Application app = ApplicationManager.getApplication();
+        logger.info("initialized app: "+app);
         mbc = app.getMessageBus().connect();
         mbc.setDefaultHandler(
                 (event1, params) -> {
@@ -101,14 +102,17 @@ public class ProjectUpdateTest {
                     }
                 });
         mbc.subscribe(Notifications.TOPIC);
+        logger.info("created message bus connection and subscribed to notifications:"+mbc);
         settings = GitExtenderSettings.getInstance();
         settings.attemptMergeAbort = false;
     }
 
     @After
     public void after() throws Exception {
+        if(mbc != null) {
+            mbc.disconnect();
+        }
         base.tearDown();
-        mbc.disconnect();
     }
 
     @Test
