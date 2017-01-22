@@ -255,18 +255,6 @@ public class ProjectUpdateTest {
         logger.info("update action performed. result:"+result);
     }
 
-    private String getCurrentBranchFromGit() {
-        String result = git("status");
-        // expected result will be similar to:
-        // On branch master
-        // Your branch is up-to-date with 'origin/master'.
-        // nothing to commit, working tree clean
-        result = result.replace("\n", "<br>");
-        String branch = result.split("<br>")[0].replace("On branch ", "");
-        logger.info("current branch is:["+branch+"] as reported from (formatted) git status: "+result);
-        return branch;
-    }
-
     private void assertNoErrors() {
         assertNotifications(0);
     }
@@ -312,5 +300,18 @@ public class ProjectUpdateTest {
                 .as("we didn't get back to our original branch after updating")
                 .isEqualTo("master")
                 .isEqualTo(getCurrentBranchFromGit());
+    }
+
+    private String getCurrentBranchFromGit() {
+        String result = git("status");
+        // expected result will be similar to:
+        // On branch master
+        // Your branch is up-to-date with 'origin/master'.
+        // nothing to commit, working tree clean
+        result = result.replace("\n", "<br>");
+        String[] firstLineWords = result.split("<br>")[0].split(" ");
+        String branch = firstLineWords[firstLineWords.length-1];
+        logger.info("current branch is:["+branch+"] as reported from (formatted) git status: "+result);
+        return branch;
     }
 }
