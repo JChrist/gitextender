@@ -30,32 +30,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class RepositoryUpdaterTest {
     private final String repoName = "testRepo";
     private final String initialBranch = "testInitialBranch";
-    @Mocked
-    GitRepository repo;
-    @Mocked
-    ProgressIndicator indicator;
-    @Mocked
-    NotificationUtil notificationUtil;
-    @Mocked
-    GitUtil gitUtil;
-    @Mocked
-    Git git;
-    @Mocked
-    ServiceManager serviceManager;
-    @Mocked
-    Project project;
-    @Mocked
-    VirtualFile root;
-    @Mocked
-    GitFetcher fetcher;
-    @Mocked
-    GitBranchTrackInfo branchTrackInfo;
-    @Mocked
-    BranchUpdater branchUpdater;
-    @Mocked
-    CheckoutHandler checkoutHandler;
-    private GitExtenderSettings settings;
+    @Mocked GitRepository repo;
+    @Mocked ProgressIndicator indicator;
+    @Mocked NotificationUtil notificationUtil;
+    @Mocked GitUtil gitUtil;
+    @Mocked Git git;
+    @Mocked ServiceManager serviceManager;
+    @Mocked Project project;
+    @Mocked VirtualFile root;
+    @Mocked GitFetcher fetcher;
+    @Mocked GitBranchTrackInfo branchTrackInfo;
+    @Mocked BranchUpdater branchUpdater;
+    @Mocked CheckoutHandler checkoutHandler;
 
+    private GitExtenderSettings settings;
     private RepositoryUpdater repositoryUpdater;
 
     @Before
@@ -67,25 +55,17 @@ public class RepositoryUpdaterTest {
     @Test
     public void updateRepository() throws Exception {
         new Expectations() {{
-            repo.isRebaseInProgress();
-            result = false;
-            repo.getRemotes();
-            result = Collections.singletonList(null);
-            repo.getCurrentBranchName();
-            result = initialBranch;
-            repo.getProject();
-            result = project;
-            repo.getRoot();
-            result = root;
+            repo.isRebaseInProgress(); result = false;
+            repo.getRemotes(); result = Collections.singletonList(null);
+            repo.getCurrentBranchName(); result = initialBranch;
+            repo.getProject(); result = project;
+            repo.getRoot(); result = root;
 
-            ServiceManager.getService(project, Git.class);
-            result = git;
+            ServiceManager.getService(project, Git.class); result = git;
 
-            GitUtil.hasLocalChanges(anyBoolean, project, root);
-            result = true;
+            GitUtil.hasLocalChanges(anyBoolean, project, root); result = true;
 
-            git.stashSave(repo, anyString);
-            result = success;
+            git.stashSave(repo, anyString); result = success;
             fetcher.fetchRootsAndNotify((Collection<GitRepository>) any, null, true);
             result = new Delegate<Boolean>() {
                 public boolean fetchRootsAndNotify(Collection<GitRepository> repos, String title, boolean notify) {
@@ -95,16 +75,12 @@ public class RepositoryUpdaterTest {
             };
 
             repo.update();
-            repo.getBranchTrackInfos();
-            result = Collections.singletonList(branchTrackInfo);
+            repo.getBranchTrackInfos(); result = Collections.singletonList(branchTrackInfo);
 
-            new BranchUpdater(git, repo, repoName, branchTrackInfo, settings);
-            result = branchUpdater;
-            branchUpdater.update();
-            result = new BranchUpdateResult(success, success, null, null);
+            new BranchUpdater(git, repo, repoName, branchTrackInfo, settings); result = branchUpdater;
+            branchUpdater.update(); result = new BranchUpdateResult(success, success, null, null);
 
-            new CheckoutHandler(git, project, root, initialBranch);
-            result = checkoutHandler;
+            new CheckoutHandler(git, project, root, initialBranch); result = checkoutHandler;
             checkoutHandler.checkout();
             repo.update();
             git.stashPop(repo);
@@ -121,8 +97,7 @@ public class RepositoryUpdaterTest {
     @Test
     public void repoInRebase() throws Exception {
         new Expectations() {{
-            repo.isRebaseInProgress();
-            result = true;
+            repo.isRebaseInProgress(); result = true;
         }};
 
         repositoryUpdater.updateRepository();
@@ -135,8 +110,7 @@ public class RepositoryUpdaterTest {
     @Test
     public void noRemotes() throws Exception {
         new Expectations() {{
-            repo.getRemotes();
-            result = Collections.emptyList();
+            repo.getRemotes(); result = Collections.emptyList();
         }};
 
         repositoryUpdater.updateRepository();
@@ -149,8 +123,7 @@ public class RepositoryUpdaterTest {
     @Test
     public void noCurrentBranch() throws Exception {
         new Expectations() {{
-            repo.getRemotes().isEmpty();
-            result = false;
+            repo.getRemotes().isEmpty(); result = false;
         }};
 
         repositoryUpdater.updateRepository();
@@ -163,10 +136,8 @@ public class RepositoryUpdaterTest {
     @Test
     public void errorDecidingWhetherToStash() throws Exception {
         new Expectations() {{
-            repo.getRemotes().isEmpty();
-            result = false;
-            repo.getCurrentBranchName();
-            result = "test";
+            repo.getRemotes().isEmpty(); result = false;
+            repo.getCurrentBranchName(); result = "test";
             GitUtil.hasLocalChanges(anyBoolean, repo.getProject(), repo.getRoot());
             result = new Exception("test exception while checking whether there are changed files");
         }};
@@ -181,14 +152,10 @@ public class RepositoryUpdaterTest {
     @Test
     public void errorStashing() throws Exception {
         new Expectations() {{
-            repo.getRemotes().isEmpty();
-            result = false;
-            repo.getCurrentBranchName();
-            result = "test";
-            GitUtil.hasLocalChanges(anyBoolean, repo.getProject(), repo.getRoot());
-            result = true;
-            git.stashSave(repo, anyString);
-            result = error;
+            repo.getRemotes().isEmpty(); result = false;
+            repo.getCurrentBranchName(); result = "test";
+            GitUtil.hasLocalChanges(anyBoolean, repo.getProject(), repo.getRoot()); result = true;
+            git.stashSave(repo, anyString); result = error;
         }};
 
         repositoryUpdater.updateRepository();
@@ -201,21 +168,16 @@ public class RepositoryUpdaterTest {
     @Test
     public void fetchError() throws Exception {
         new Expectations() {{
-            repo.getRemotes().isEmpty();
-            result = false;
-            repo.getCurrentBranchName();
-            result = initialBranch;
-            fetcher.fetchRootsAndNotify((Collection<GitRepository>) any, null, true);
-            result = false;
+            repo.getRemotes().isEmpty(); result = false;
+            repo.getCurrentBranchName(); result = initialBranch;
+            fetcher.fetchRootsAndNotify((Collection<GitRepository>) any, null, true); result = false;
         }};
 
         repositoryUpdater.updateRepository();
 
         new Verifications() {{
-            repo.update();
-            times = 0;
-            NotificationUtil.showErrorNotification(anyString, anyString);
-            times = 0;
+            repo.update(); times = 0;
+            NotificationUtil.showErrorNotification(anyString, anyString); times = 0;
         }};
     }
 
@@ -223,25 +185,17 @@ public class RepositoryUpdaterTest {
     public void checkoutError() throws Exception {
         final String local = "local";
         new Expectations() {{
-            repo.isRebaseInProgress();
-            result = false;
-            repo.getRemotes();
-            result = Collections.singletonList(null);
-            repo.getCurrentBranchName();
-            result = initialBranch;
-            repo.getProject();
-            result = project;
-            repo.getRoot();
-            result = root;
+            repo.isRebaseInProgress(); result = false;
+            repo.getRemotes(); result = Collections.singletonList(null);
+            repo.getCurrentBranchName(); result = initialBranch;
+            repo.getProject(); result = project;
+            repo.getRoot(); result = root;
 
-            ServiceManager.getService(project, Git.class);
-            result = git;
+            ServiceManager.getService(project, Git.class); result = git;
 
-            GitUtil.hasLocalChanges(anyBoolean, project, root);
-            result = true;
+            GitUtil.hasLocalChanges(anyBoolean, project, root); result = true;
 
-            git.stashSave(repo, anyString);
-            result = success;
+            git.stashSave(repo, anyString); result = success;
             fetcher.fetchRootsAndNotify((Collection<GitRepository>) any, null, true);
             result = new Delegate<Boolean>() {
                 public boolean fetchRootsAndNotify(Collection<GitRepository> repos, String title, boolean notify) {
@@ -251,21 +205,15 @@ public class RepositoryUpdaterTest {
             };
 
             repo.update();
-            repo.getBranchTrackInfos();
-            result = Collections.singletonList(branchTrackInfo);
+            repo.getBranchTrackInfos(); result = Collections.singletonList(branchTrackInfo);
 
-            new BranchUpdater(git, repo, repoName, branchTrackInfo, settings);
-            result = branchUpdater;
-            branchUpdater.update();
-            result = new BranchUpdateResult(error, null, null, null);
-            branchUpdater.getLocalBranchName();
-            result = local;
-            branchUpdater.getRemoteBranchName();
-            times = 0;
+            new BranchUpdater(git, repo, repoName, branchTrackInfo, settings); result = branchUpdater;
+            branchUpdater.update(); result = new BranchUpdateResult(error, null, null, null);
+            branchUpdater.getLocalBranchName(); result = local;
+            branchUpdater.getRemoteBranchName(); times = 0;
 
 
-            new CheckoutHandler(git, project, root, initialBranch);
-            result = checkoutHandler;
+            new CheckoutHandler(git, project, root, initialBranch); result = checkoutHandler;
             checkoutHandler.checkout();
             repo.update();
             git.stashPop(repo);
@@ -288,26 +236,20 @@ public class RepositoryUpdaterTest {
         final String local = "local";
         final String remote = "remote";
 
+        settings.attemptMergeAbort = false;
+
         new Expectations() {{
-            repo.isRebaseInProgress();
-            result = false;
-            repo.getRemotes();
-            result = Collections.singletonList(null);
-            repo.getCurrentBranchName();
-            result = initialBranch;
-            repo.getProject();
-            result = project;
-            repo.getRoot();
-            result = root;
+            repo.isRebaseInProgress(); result = false;
+            repo.getRemotes(); result = Collections.singletonList(null);
+            repo.getCurrentBranchName(); result = initialBranch;
+            repo.getProject(); result = project;
+            repo.getRoot(); result = root;
 
-            ServiceManager.getService(project, Git.class);
-            result = git;
+            ServiceManager.getService(project, Git.class); result = git;
 
-            GitUtil.hasLocalChanges(anyBoolean, project, root);
-            result = true;
+            GitUtil.hasLocalChanges(anyBoolean, project, root); result = true;
 
-            git.stashSave(repo, anyString);
-            result = success;
+            git.stashSave(repo, anyString); result = success;
             fetcher.fetchRootsAndNotify((Collection<GitRepository>) any, null, true);
             result = new Delegate<Boolean>() {
                 public boolean fetchRootsAndNotify(Collection<GitRepository> repos, String title, boolean notify) {
@@ -317,20 +259,14 @@ public class RepositoryUpdaterTest {
             };
 
             repo.update();
-            repo.getBranchTrackInfos();
-            result = Collections.singletonList(branchTrackInfo);
+            repo.getBranchTrackInfos(); result = Collections.singletonList(branchTrackInfo);
 
-            new BranchUpdater(git, repo, repoName, branchTrackInfo, settings);
-            result = branchUpdater;
-            branchUpdater.update();
-            result = new BranchUpdateResult(success, error, null, null);
-            branchUpdater.getLocalBranchName();
-            result = local;
-            branchUpdater.getRemoteBranchName();
-            result = remote;
+            new BranchUpdater(git, repo, repoName, branchTrackInfo, settings); result = branchUpdater;
+            branchUpdater.update(); result = new BranchUpdateResult(success, error, null, null);
+            branchUpdater.getLocalBranchName(); result = local;
+            branchUpdater.getRemoteBranchName(); result = remote;
 
-            new CheckoutHandler(git, project, root, initialBranch);
-            result = checkoutHandler;
+            new CheckoutHandler(git, project, root, initialBranch); result = checkoutHandler;
             checkoutHandler.checkout();
             repo.update();
             git.stashPop(repo);
@@ -355,25 +291,17 @@ public class RepositoryUpdaterTest {
         settings.attemptMergeAbort = true;
 
         new Expectations() {{
-            repo.isRebaseInProgress();
-            result = false;
-            repo.getRemotes();
-            result = Collections.singletonList(null);
-            repo.getCurrentBranchName();
-            result = initialBranch;
-            repo.getProject();
-            result = project;
-            repo.getRoot();
-            result = root;
+            repo.isRebaseInProgress(); result = false;
+            repo.getRemotes(); result = Collections.singletonList(null);
+            repo.getCurrentBranchName(); result = initialBranch;
+            repo.getProject(); result = project;
+            repo.getRoot(); result = root;
 
-            ServiceManager.getService(project, Git.class);
-            result = git;
+            ServiceManager.getService(project, Git.class); result = git;
 
-            GitUtil.hasLocalChanges(anyBoolean, project, root);
-            result = true;
+            GitUtil.hasLocalChanges(anyBoolean, project, root); result = true;
 
-            git.stashSave(repo, anyString);
-            result = success;
+            git.stashSave(repo, anyString); result = success;
             fetcher.fetchRootsAndNotify((Collection<GitRepository>) any, null, true);
             result = new Delegate<Boolean>() {
                 public boolean fetchRootsAndNotify(Collection<GitRepository> repos, String title, boolean notify) {
@@ -383,20 +311,14 @@ public class RepositoryUpdaterTest {
             };
 
             repo.update();
-            repo.getBranchTrackInfos();
-            result = Collections.singletonList(branchTrackInfo);
+            repo.getBranchTrackInfos(); result = Collections.singletonList(branchTrackInfo);
 
-            new BranchUpdater(git, repo, repoName, branchTrackInfo, settings);
-            result = branchUpdater;
-            branchUpdater.update();
-            result = new BranchUpdateResult(success, error, error, success);
-            branchUpdater.getLocalBranchName();
-            result = local;
-            branchUpdater.getRemoteBranchName();
-            result = remote;
+            new BranchUpdater(git, repo, repoName, branchTrackInfo, settings); result = branchUpdater;
+            branchUpdater.update(); result = new BranchUpdateResult(success, error, error, success);
+            branchUpdater.getLocalBranchName(); result = local;
+            branchUpdater.getRemoteBranchName(); result = remote;
 
-            new CheckoutHandler(git, project, root, initialBranch);
-            result = checkoutHandler;
+            new CheckoutHandler(git, project, root, initialBranch); result = checkoutHandler;
             checkoutHandler.checkout();
             repo.update();
             git.stashPop(repo);
@@ -422,25 +344,17 @@ public class RepositoryUpdaterTest {
         settings.attemptMergeAbort = true;
 
         new Expectations() {{
-            repo.isRebaseInProgress();
-            result = false;
-            repo.getRemotes();
-            result = Collections.singletonList(null);
-            repo.getCurrentBranchName();
-            result = initialBranch;
-            repo.getProject();
-            result = project;
-            repo.getRoot();
-            result = root;
+            repo.isRebaseInProgress(); result = false;
+            repo.getRemotes(); result = Collections.singletonList(null);
+            repo.getCurrentBranchName(); result = initialBranch;
+            repo.getProject(); result = project;
+            repo.getRoot(); result = root;
 
-            ServiceManager.getService(project, Git.class);
-            result = git;
+            ServiceManager.getService(project, Git.class); result = git;
 
-            GitUtil.hasLocalChanges(anyBoolean, project, root);
-            result = true;
+            GitUtil.hasLocalChanges(anyBoolean, project, root); result = true;
 
-            git.stashSave(repo, anyString);
-            result = success;
+            git.stashSave(repo, anyString); result = success;
             fetcher.fetchRootsAndNotify((Collection<GitRepository>) any, null, true);
             result = new Delegate<Boolean>() {
                 public boolean fetchRootsAndNotify(Collection<GitRepository> repos, String title, boolean notify) {
@@ -449,28 +363,18 @@ public class RepositoryUpdaterTest {
                 }
             };
 
-            repo.update();
-            times = 1;
-            repo.getBranchTrackInfos();
-            result = Arrays.asList(branchTrackInfo, branchTrackInfo);
+            repo.update(); times = 1;
+            repo.getBranchTrackInfos(); result = Arrays.asList(branchTrackInfo, branchTrackInfo);
 
-            new BranchUpdater(git, repo, repoName, branchTrackInfo, settings);
-            result = branchUpdater;
-            branchUpdater.update();
-            result = new BranchUpdateResult(success, error, error, error);
-            times = 1;
-            branchUpdater.getLocalBranchName();
-            result = local;
-            branchUpdater.getRemoteBranchName();
-            result = remote;
+            new BranchUpdater(git, repo, repoName, branchTrackInfo, settings); result = branchUpdater;
+            branchUpdater.update(); result = new BranchUpdateResult(success, error, error, error); times = 1;
+            branchUpdater.getLocalBranchName(); result = local;
+            branchUpdater.getRemoteBranchName(); result = remote;
 
             new CheckoutHandler(git, project, root, initialBranch);
-            result = checkoutHandler;
-            minTimes = 0;
-            checkoutHandler.checkout();
-            times = 0;
-            git.stashPop(repo);
-            times = 0;
+            result = checkoutHandler; minTimes = 0;
+            checkoutHandler.checkout(); times = 0;
+            git.stashPop(repo); times = 0;
         }};
 
         repositoryUpdater.updateRepository();
