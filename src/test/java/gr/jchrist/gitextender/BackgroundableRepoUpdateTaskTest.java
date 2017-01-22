@@ -31,8 +31,7 @@ public class BackgroundableRepoUpdateTaskTest {
         final GitExtenderSettings settings = new GitExtenderSettings();
         final AtomicInteger countDown = new AtomicInteger(1);
         new Expectations() {{
-            repo.getProject();
-            result = project;
+            repo.getProject(); result = project;
         }};
         BackgroundableRepoUpdateTask task = new BackgroundableRepoUpdateTask(repo, repoName, settings, countDown, token);
 
@@ -59,8 +58,7 @@ public class BackgroundableRepoUpdateTaskTest {
         final GitExtenderSettings settings = new GitExtenderSettings();
         final AtomicInteger countDown = new AtomicInteger(2);
         new Expectations() {{
-            repo.getProject();
-            result = project;
+            repo.getProject(); result = project;
         }};
 
         BackgroundableRepoUpdateTask task = new BackgroundableRepoUpdateTask(repo, repoName, settings, countDown, token);
@@ -70,10 +68,8 @@ public class BackgroundableRepoUpdateTaskTest {
         new Verifications() {{
             updater.updateRepository();
 
-            DvcsUtil.workingTreeChangeFinished(project, token);
-            times = 0;
-            NotificationUtil.showInfoNotification("Update Completed", "Git Extender updated all projects");
-            times = 0;
+            DvcsUtil.workingTreeChangeFinished(project, token); times = 0;
+            NotificationUtil.showInfoNotification("Update Completed", "Git Extender updated all projects"); times = 0;
         }};
     }
 }

@@ -18,20 +18,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(JMockit.class)
 public class CheckoutHandlerTest {
     private final String local = "local";
-    @Mocked
-    Git git;
-    @Mocked
-    Project project;
-    @Mocked
-    VirtualFile root;
+    @Mocked Git git;
+    @Mocked Project project;
+    @Mocked VirtualFile root;
 
     @Test
     public void checkout(@Mocked final GitLineHandler checkout) throws Exception {
         new Expectations() {{
-            new GitLineHandler(project, root, GitCommand.CHECKOUT);
-            result = checkout;
-            git.runCommand(checkout);
-            result = success;
+            new GitLineHandler(project, root, GitCommand.CHECKOUT); result = checkout;
+            git.runCommand(checkout); result = success;
         }};
         CheckoutHandler handler = new CheckoutHandler(git, project, root, local);
         assertThat(handler.checkout()).isSameAs(success);

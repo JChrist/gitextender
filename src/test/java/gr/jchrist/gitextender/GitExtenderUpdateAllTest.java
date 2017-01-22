@@ -41,12 +41,8 @@ public class GitExtenderUpdateAllTest {
 
     @Test
     public void getGitRepositoryManager() throws Exception {
-        /*new Expectations() {{
-            project.getComponent(VcsRepositoryManager.class); result = vcsRepositoryManager;
-            new GitRepositoryManager(project, vcsRepositoryManager); result = gitRepositoryManager;
-        }};*/
-
-        assertThat(GitExtenderUpdateAll.getGitRepositoryManager(base.getProject())).isNotNull();
+        assertThat(GitExtenderUpdateAll.getGitRepositoryManager(base.getProject()))
+                .isNotNull();
     }
 
     @Test

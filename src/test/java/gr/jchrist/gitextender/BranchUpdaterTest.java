@@ -28,12 +28,8 @@ public class BranchUpdaterTest {
     private final String repoName = "testGitRepo";
     private final String localBranchName = "testLocal";
     private final String remoteBranchName = "testRemote";
-    private
-    @Mocked
-    Git git;
-    private
-    @Mocked
-    GitRepository gitRepository;
+    private @Mocked Git git;
+    private @Mocked GitRepository gitRepository;
     private GitExtenderSettings gitExtenderSettings;
     private GitBranchTrackInfo gitBranchTrackInfo;
     private BranchUpdater branchUpdater;
@@ -60,15 +56,11 @@ public class BranchUpdaterTest {
             final @Mocked FastForwardOnlyMerger ffMerger
     ) throws Exception {
         new Expectations() {{
-            gitRepository.getProject();
-            result = project;
-            gitRepository.getRoot();
-            result = virtualFile;
-            checkoutHandler.checkout();
-            result = success;
+            gitRepository.getProject(); result = project;
+            gitRepository.getRoot(); result = virtualFile;
+            checkoutHandler.checkout(); result = success;
             beforeMergeHandler.beforeMerge();
-            ffMerger.mergeFastForward();
-            result = success;
+            ffMerger.mergeFastForward(); result = success;
             afterMergeHandler.afterMerge();
         }};
 
@@ -92,23 +84,17 @@ public class BranchUpdaterTest {
         gitExtenderSettings.attemptMergeAbort = true;
 
         new Expectations() {{
-            gitRepository.getProject();
-            result = project;
-            gitRepository.getRoot();
-            result = virtualFile;
-            checkoutHandler.checkout();
-            result = success;
+            gitRepository.getProject(); result = project;
+            gitRepository.getRoot(); result = virtualFile;
+            checkoutHandler.checkout(); result = success;
 
             beforeMergeHandler.beforeMerge();
 
-            ffMerger.mergeFastForward();
-            result = error;
+            ffMerger.mergeFastForward(); result = error;
 
             simpleMerger.mergeAbortIfFailed();
-            simpleMerger.getMergeResult();
-            result = success;
-            simpleMerger.getAbortResult();
-            result = null;
+            simpleMerger.getMergeResult(); result = success;
+            simpleMerger.getAbortResult(); result = null;
 
             afterMergeHandler.afterMerge();
         }};
@@ -128,12 +114,9 @@ public class BranchUpdaterTest {
     ) throws Exception {
 
         new Expectations() {{
-            gitRepository.getProject();
-            result = project;
-            gitRepository.getRoot();
-            result = virtualFile;
-            checkoutHandler.checkout();
-            result = error;
+            gitRepository.getProject(); result = project;
+            gitRepository.getRoot(); result = virtualFile;
+            checkoutHandler.checkout(); result = error;
         }};
 
         BranchUpdateResult bur = branchUpdater.update();
@@ -156,26 +139,19 @@ public class BranchUpdaterTest {
         gitExtenderSettings.attemptMergeAbort = true;
 
         new Expectations() {{
-            gitRepository.getProject();
-            result = project;
-            gitRepository.getRoot();
-            result = virtualFile;
-            checkoutHandler.checkout();
-            result = success;
+            gitRepository.getProject(); result = project;
+            gitRepository.getRoot(); result = virtualFile;
+            checkoutHandler.checkout(); result = success;
 
             beforeMergeHandler.beforeMerge();
 
-            ffMerger.mergeFastForward();
-            result = error;
+            ffMerger.mergeFastForward(); result = error;
 
             simpleMerger.mergeAbortIfFailed();
-            simpleMerger.getMergeResult();
-            result = error;
-            simpleMerger.getAbortResult();
-            result = success;
+            simpleMerger.getMergeResult(); result = error;
+            simpleMerger.getAbortResult(); result = success;
 
-            afterMergeHandler.afterMerge();
-            times = 0;
+            afterMergeHandler.afterMerge(); times = 0;
         }};
 
         BranchUpdateResult bur = branchUpdater.update();
@@ -200,23 +176,17 @@ public class BranchUpdaterTest {
         gitExtenderSettings.attemptMergeAbort = false;
 
         new Expectations() {{
-            gitRepository.getProject();
-            result = project;
-            gitRepository.getRoot();
-            result = virtualFile;
-            checkoutHandler.checkout();
-            result = success;
+            gitRepository.getProject(); result = project;
+            gitRepository.getRoot(); result = virtualFile;
+            checkoutHandler.checkout(); result = success;
 
             beforeMergeHandler.beforeMerge();
 
-            ffMerger.mergeFastForward();
-            result = error;
+            ffMerger.mergeFastForward(); result = error;
 
-            simpleMerger.mergeAbortIfFailed();
-            times = 0;
+            simpleMerger.mergeAbortIfFailed(); times = 0;
 
-            afterMergeHandler.afterMerge();
-            times = 0;
+            afterMergeHandler.afterMerge(); times = 0;
         }};
 
         BranchUpdateResult bur = branchUpdater.update();

@@ -35,8 +35,7 @@ public class GitTestUtil {
         cd(source);
         if (bare) {
             git("clone --bare -- . " + destination);
-        }
-        else {
+        } else {
             git("clone -- . " + destination);
         }
     }

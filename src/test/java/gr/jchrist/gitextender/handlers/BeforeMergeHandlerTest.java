@@ -20,10 +20,8 @@ public class BeforeMergeHandlerTest {
     private final String repo = "repo";
     private final String local = "local";
     private final String remote = "remote";
-    @Mocked
-    Project project;
-    @Mocked
-    VirtualFile root;
+    @Mocked Project project;
+    @Mocked VirtualFile root;
     private BeforeMergeHandler handler;
 
     @Before
@@ -40,12 +38,9 @@ public class BeforeMergeHandlerTest {
     ) throws Exception {
         final String expectedLabel = handler.getBeforeLocalHistoryLabel();
         new Expectations() {{
-            GitRevisionNumber.resolve(project, root, "HEAD");
-            result = start;
-            localHistory.putSystemLabel(project, expectedLabel);
-            result = before;
-            localHistory.startAction(expectedLabel);
-            result = localHistoryAction;
+            GitRevisionNumber.resolve(project, root, "HEAD"); result = start;
+            localHistory.putSystemLabel(project, expectedLabel); result = before;
+            localHistory.startAction(expectedLabel); result = localHistoryAction;
         }};
         MergeState state = handler.beforeMerge();
 
@@ -73,10 +68,8 @@ public class BeforeMergeHandlerTest {
         new Expectations() {{
             GitRevisionNumber.resolve(project, root, "HEAD");
             result = new Exception("test exception trying to get revision number");
-            localHistory.putSystemLabel(project, expectedLabel);
-            result = before;
-            localHistory.startAction(expectedLabel);
-            result = localHistoryAction;
+            localHistory.putSystemLabel(project, expectedLabel); result = before;
+            localHistory.startAction(expectedLabel); result = localHistoryAction;
         }};
         MergeState state = handler.beforeMerge();
 

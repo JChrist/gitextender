@@ -26,8 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(JMockit.class)
 public class AfterSuccessfulMergeHandlerTest {
-    @Mocked
-    MergeState mergeState;
+    @Mocked MergeState mergeState;
 
     private AfterSuccessfulMergeHandler handler;
 
@@ -59,20 +58,15 @@ public class AfterSuccessfulMergeHandlerTest {
         updatedFiles.getGroupById(FileGroup.UPDATED_ID).add("test", "test", null);
 
         new Expectations() {{
-            mergeState.getUpdatedFiles();
-            result = updatedFiles;
+            mergeState.getUpdatedFiles(); result = updatedFiles;
 
             mergeState.getProject().getMessageBus().syncPublisher(VcsAnnotationRefresher.LOCAL_CHANGES_CHANGED);
             result = refresher;
 
-            mergeState.getProject().isOpen();
-            result = true;
-            ApplicationManager.getApplication();
-            result = application;
-            application.isDispatchThread();
-            result = true;
-            application.isHeadlessEnvironment();
-            result = true;
+            mergeState.getProject().isOpen(); result = true;
+            ApplicationManager.getApplication(); result = application;
+            application.isDispatchThread(); result = true;
+            application.isHeadlessEnvironment(); result = true;
         }};
 
         handler.afterMerge();
@@ -113,8 +107,7 @@ public class AfterSuccessfulMergeHandlerTest {
         updatedFiles.registerGroup(child3);
 
         new Expectations() {{
-            mergeState.getUpdatedFiles();
-            result = updatedFiles;
+            mergeState.getUpdatedFiles(); result = updatedFiles;
             RefreshVFsSynchronously.updateAllChanged(updatedFiles);
             mergeState.getProject().getMessageBus().syncPublisher(VcsAnnotationRefresher.LOCAL_CHANGES_CHANGED);
             result = refresher;
@@ -135,15 +128,13 @@ public class AfterSuccessfulMergeHandlerTest {
     ) throws Exception {
         final UpdatedFiles updatedFiles = UpdatedFiles.create();
         new Expectations() {{
-            mergeState.getUpdatedFiles();
-            result = updatedFiles;
+            mergeState.getUpdatedFiles(); result = updatedFiles;
         }};
 
         handler.showUpdatedFiles();
         //verify no notification due to empty files
         new Verifications() {{
-            notifier.prepareNotificationWithUpdateInfo();
-            times = 0;
+            notifier.prepareNotificationWithUpdateInfo(); times = 0;
         }};
     }
 
@@ -152,10 +143,8 @@ public class AfterSuccessfulMergeHandlerTest {
             @Mocked final ToolWindow changes
     ) throws Exception {
         new Expectations() {{
-            mergeState.getProject().isOpen();
-            result = true;
-            changes.getContentManager();
-            result = null;
+            mergeState.getProject().isOpen(); result = true;
+            changes.getContentManager(); result = null;
         }};
 
         assertThat(handler.generateUpdateInfoTree()).isNull();
@@ -166,10 +155,8 @@ public class AfterSuccessfulMergeHandlerTest {
             @Mocked final ToolWindow changes
     ) throws Exception {
         new Expectations() {{
-            mergeState.getProject().isOpen();
-            result = true;
-            changes.getContentManager();
-            result = null;
+            mergeState.getProject().isOpen(); result = true;
+            changes.getContentManager(); result = null;
         }};
 
         // if it didn't stop due to no content manager,

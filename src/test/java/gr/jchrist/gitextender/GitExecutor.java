@@ -73,8 +73,7 @@ public class GitExecutor {
     public static void cd(@NotNull String relativeOrAbsolutePath) {
         if (relativeOrAbsolutePath.startsWith("/") || relativeOrAbsolutePath.charAt(1) == ':') {
             cdAbs(relativeOrAbsolutePath);
-        }
-        else {
+        } else {
             cdRel(relativeOrAbsolutePath);
         }
     }
@@ -90,8 +89,7 @@ public class GitExecutor {
             assert fileCreated;
             debug("# touch " + filePath);
             return file;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -106,8 +104,7 @@ public class GitExecutor {
     public static void echo(@NotNull String fileName, @NotNull String content) {
         try {
             FileUtil.writeToFile(child(fileName), content.getBytes(), true);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -130,8 +127,7 @@ public class GitExecutor {
         Process clientProcess;
         try {
             clientProcess = builder.start();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
@@ -151,8 +147,7 @@ public class GitExecutor {
             if (!ignoreNonZeroExitCode) {
                 throw new ExecutionException(result.getExitCode(), stdout);
             }
-        }
-        else {
+        } else {
             debug(stdout);
         }
         return stdout;
@@ -170,18 +165,14 @@ public class GitExecutor {
                 if (c == '\'') {
                     insideParam = false;
                     flush = true;
-                }
-                else {
+                } else {
                     currentParam.append(c);
                 }
-            }
-            else if (c == '\'') {
+            } else if (c == '\'') {
                 insideParam = true;
-            }
-            else if (c == ' ') {
+            } else if (c == ' ') {
                 flush = true;
-            }
-            else {
+            } else {
                 currentParam.append(c);
             }
 
@@ -252,8 +243,7 @@ public class GitExecutor {
                 if (!isIndexLockFileError(stdout)) {
                     return stdout;
                 }
-            }
-            catch (ExecutionException e) {
+            } catch (ExecutionException e) {
                 stdout = e.getOutput();
                 if (!isIndexLockFileError(stdout)) {
                     throw e;

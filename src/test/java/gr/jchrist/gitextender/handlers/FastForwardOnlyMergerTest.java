@@ -19,12 +19,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(JMockit.class)
 public class FastForwardOnlyMergerTest {
     private final String remoteBranchName = "test_remote_branch_name";
-    @Mocked
-    Git git;
-    @Mocked
-    Project project;
-    @Mocked
-    VirtualFile root;
+    @Mocked Git git;
+    @Mocked Project project;
+    @Mocked VirtualFile root;
     private FastForwardOnlyMerger fastForwardOnlyMerger;
 
     @Before
@@ -35,10 +32,8 @@ public class FastForwardOnlyMergerTest {
     @Test
     public void mergeFastForward(final @Mocked GitLineHandler mergeHandler) throws Exception {
         new Expectations() {{
-            new GitLineHandler(project, root, GitCommand.MERGE);
-            result = mergeHandler;
-            git.runCommand(mergeHandler);
-            result = success;
+            new GitLineHandler(project, root, GitCommand.MERGE); result = mergeHandler;
+            git.runCommand(mergeHandler); result = success;
         }};
         assertThat(fastForwardOnlyMerger.mergeFastForward())
                 .as("unexpected result from ff merge")

@@ -21,12 +21,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(JMockit.class)
 public class SimpleMergerTest {
     private final String remoteBranchName = "test_remote_branch_name";
-    @Mocked
-    Git git;
-    @Mocked
-    Project project;
-    @Mocked
-    VirtualFile root;
+    @Mocked Git git;
+    @Mocked Project project;
+    @Mocked VirtualFile root;
     private SimpleMerger simpleMerger;
 
     @Before
@@ -37,10 +34,8 @@ public class SimpleMergerTest {
     @Test
     public void successfulMerge(final @Mocked GitLineHandler mergeHandler) throws Exception {
         new Expectations() {{
-            new GitLineHandler(project, root, GitCommand.MERGE);
-            result = mergeHandler;
-            git.runCommand(mergeHandler);
-            result = success;
+            new GitLineHandler(project, root, GitCommand.MERGE); result = mergeHandler;
+            git.runCommand(mergeHandler); result = success;
         }};
 
         simpleMerger.mergeAbortIfFailed();
@@ -50,8 +45,7 @@ public class SimpleMergerTest {
 
         new Verifications() {{
             mergeHandler.addParameters(remoteBranchName);
-            mergeHandler.addParameters("--abort");
-            times = 0;
+            mergeHandler.addParameters("--abort"); times = 0;
         }};
     }
 
@@ -60,11 +54,8 @@ public class SimpleMergerTest {
             final @Mocked GitLineHandler handler
     ) throws Exception {
         new Expectations() {{
-            new GitLineHandler(project, root, GitCommand.MERGE);
-            result = handler;
-            git.runCommand(handler);
-            result = error;
-            result = success;
+            new GitLineHandler(project, root, GitCommand.MERGE); result = handler;
+            git.runCommand(handler); result = error; result = success;
         }};
 
         simpleMerger.mergeAbortIfFailed();
@@ -89,10 +80,8 @@ public class SimpleMergerTest {
             final @Mocked GitLineHandler handler
     ) throws Exception {
         new Expectations() {{
-            new GitLineHandler(project, root, GitCommand.MERGE);
-            result = handler;
-            git.runCommand(handler);
-            result = error;
+            new GitLineHandler(project, root, GitCommand.MERGE); result = handler;
+            git.runCommand(handler); result = error;
         }};
 
         simpleMerger.mergeAbortIfFailed();

@@ -18,18 +18,12 @@ public class MergeStateTest {
     private final String repo = "repo";
     private final String local = "local";
     private final String remote = "remote";
-    @Mocked
-    Project project;
-    @Mocked
-    VirtualFile root;
-    @Mocked
-    GitRevisionNumber start;
-    @Mocked
-    Label before;
-    @Mocked
-    LocalHistoryAction localHistoryAction;
-    @Mocked
-    UpdatedFiles updatedFiles;
+    @Mocked Project project;
+    @Mocked VirtualFile root;
+    @Mocked GitRevisionNumber start;
+    @Mocked Label before;
+    @Mocked LocalHistoryAction localHistoryAction;
+    @Mocked UpdatedFiles updatedFiles;
     private MergeState mergeState;
 
     @Test
