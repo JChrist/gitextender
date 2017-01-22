@@ -41,11 +41,11 @@ public class GitTestUtil {
             @NotNull Project project, @NotNull String root, @NotNull String remotePath, @NotNull String remoteAccessPath) {
         cd(remotePath);
         git("init --bare");
-        setGitUser();
+        setupGitConfig();
 
         cloneRepo(remotePath, remoteAccessPath, false);
         cd(remoteAccessPath);
-        setGitUser();
+        setupGitConfig();
 
         tac("initial_file.txt");
         push();
@@ -60,7 +60,7 @@ public class GitTestUtil {
         GitRepository repo = registerRepo(project, root);
 
         cd(root);
-        setGitUser();
+        setupGitConfig();
         checkout("develop");
         checkout("master");
 
@@ -78,9 +78,10 @@ public class GitTestUtil {
         return repository;
     }
 
-    public static void setGitUser() {
+    public static void setupGitConfig() {
         git("config user.name 'JChrist'");
         git("config user.email 'j@christ.gr'");
+        git("config push.default simple");
     }
 
     @NotNull
