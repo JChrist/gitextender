@@ -63,6 +63,7 @@ public class ProjectUpdateTest {
         base.getFilesToDelete().add(new File(remoteRepoAccessPath));
         base.getFilesToDelete().add(new File(base.getProjectPath()));
 
+        System.out.println("creating test remote in directory: " + remoteRepoPath+" with access (non-bare) in:"+remoteRepoAccessPath);
         logger.info("creating test remote in directory: " + remoteRepoPath+" with access (non-bare) in:"+remoteRepoAccessPath);
 
         repository = GitTestUtil.createRemoteRepositoryAndCloneToLocal(base.getProject(), base.getProjectPath(),
