@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
         }
 )
 public class GitExtenderSettings implements PersistentStateComponent<GitExtenderSettings> {
-    public Boolean attemptMergeAbort;
+    public boolean attemptMergeAbort;
 
     public static GitExtenderSettings getInstance() {
         return ServiceManager.getService(GitExtenderSettings.class);
@@ -31,11 +31,11 @@ public class GitExtenderSettings implements PersistentStateComponent<GitExtender
         XmlSerializerUtil.copyBean(gitExtenderSettings, this);
     }
 
-    public Boolean getAttemptMergeAbort() {
+    public boolean getAttemptMergeAbort() {
         return attemptMergeAbort;
     }
 
-    public void setAttemptMergeAbort(Boolean attemptMergeAbort) {
+    public void setAttemptMergeAbort(boolean attemptMergeAbort) {
         this.attemptMergeAbort = attemptMergeAbort;
     }
 }

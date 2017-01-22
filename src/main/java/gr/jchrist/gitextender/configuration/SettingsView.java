@@ -53,7 +53,7 @@ public class SettingsView implements SearchableConfigurable {
     public boolean isModified() {
         GitExtenderSettings save = save();
         return save == null
-                || !save.getAttemptMergeAbort().equals(gitExtenderSettings.getAttemptMergeAbort());
+                || !save.getAttemptMergeAbort() == gitExtenderSettings.getAttemptMergeAbort();
     }
 
     @Override
@@ -74,8 +74,7 @@ public class SettingsView implements SearchableConfigurable {
     }
 
     protected void fill(GitExtenderSettings gitExtenderSettings) {
-        attemptMergeAbort.setSelected(gitExtenderSettings == null || gitExtenderSettings.getAttemptMergeAbort() == null ? false :
-                gitExtenderSettings.getAttemptMergeAbort());
+        attemptMergeAbort.setSelected(gitExtenderSettings != null && gitExtenderSettings.getAttemptMergeAbort());
     }
 
     protected GitExtenderSettings save() {
