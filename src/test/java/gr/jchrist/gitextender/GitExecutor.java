@@ -38,7 +38,7 @@ public class GitExecutor {
         @NotNull private final String myOutput;
 
         ExecutionException(int exitCode, @NotNull String output) {
-            super("Failed with exit code " + exitCode);
+            super("Failed with exit code " + exitCode+". Output: "+output);
             myExitCode = exitCode;
             myOutput = output;
         }
