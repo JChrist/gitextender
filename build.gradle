@@ -9,13 +9,26 @@ plugins {
 }
 
 intellij {
-    version 'LATEST-EAP-SNAPSHOT' //the default value
+    type = 'IC'
+    version = '2016.3'
+    updateSinceUntilBuild = true
+    downloadSources = true
     plugins 'git4idea' //comma separated list of plugins to depend on
     pluginName 'gitextender'
+    publish {
+        //no auto-publishing for now
+        username ''
+        password ''
+        channel 'alpha'
+    }
 }
 
 group 'gr.jchrist'
 version '0.3-SNAPSHOT'
+
+apply plugin: 'java'
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
 
 repositories {
     mavenCentral()
