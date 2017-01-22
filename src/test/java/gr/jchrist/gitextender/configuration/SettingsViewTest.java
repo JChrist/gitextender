@@ -1,5 +1,6 @@
 package gr.jchrist.gitextender.configuration;
 
+import gr.jchrist.gitextender.GitTestUtil;
 import gr.jchrist.gitextender.TestingUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -19,6 +20,9 @@ public class SettingsViewTest {
     public void before() throws Exception {
         base = TestingUtil.getBaseTest();
         base.setUp();
+        GitTestUtil.overrideService(GitExtenderSettings.class, GitExtenderSettings.class);
+        GitExtenderSettings settings = GitExtenderSettings.getInstance();
+        assertThat(settings).isNotNull();
         settingsView = new SettingsView();
     }
 
@@ -56,9 +60,12 @@ public class SettingsViewTest {
 
     @Test
     public void testIsModifiedApply() throws Exception {
+        assertThat(settingsView.isModified()).isFalse();
+        settingsView.getAttemptMergeAbort().setSelected(true);
         assertThat(settingsView.isModified()).isTrue();
         settingsView.apply();
         assertThat(settingsView.isModified()).isFalse();
+        assertThat(settingsView.getAttemptMergeAbort().isSelected()).isTrue();
     }
 
     @Test
