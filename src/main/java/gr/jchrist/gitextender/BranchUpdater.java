@@ -61,7 +61,10 @@ public class BranchUpdater {
             // this is controlled with a user setting flag,
             // because it might be dangerous in case abort fails
             if (Boolean.TRUE.equals(gitExtenderSettings.getAttemptMergeAbort())) {
+                System.out.println("fast-forward merge failed, attempting simple merge");
                 mergeAbortIfFailed();
+            } else {
+                System.out.println("fast-forward merge failed, NOT attempting simple merge");
             }
         }
 
