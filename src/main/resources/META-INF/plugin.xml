@@ -9,26 +9,33 @@
         local branches tracking a remote for all git roots in the current project<br/>
         Local branches that will be updated are the branches that exist locally and have been configured
         to track a remote branch.<br/>
-        It fast-forwards commits in remote branches to local branches.
-        If the local branch cannot be merged to the tracked remote using fast-forward only,
-        then a simple merge will be attempted.
-        If there are conflict errors, it will be aborted and an error notification will be shown.
-        In this case, the update must be performed manually for the reported branch.<br/>
+        <p><strong>It requires IDE version 2016.3 or higher and Java 8</strong></p>
+        It tries to fast-forward commits in remote branches to local branches.
+        It can be configured through the settings to attempt a simple merge,
+        if the local branch cannot be merged to the tracked remote using fast-forward only.
+        In this case, if there are conflict errors, the merge will be aborted and an error notification will be shown.
+        The update, then, should be performed manually for the reported branch, in order to resolve the conflicts.
+        Any possible uncommitted changes to the current branch will be stashed<br/>
         After updating a branch, if there were any file changes, they will be displayed in
         IntelliJ Version Control tab.
-        Currently, the correct list of file changes
-        (updated, created, removed) will be displayed.
+        Currently, the correct list of file changes (updated, created, removed) will be displayed.
         However, when performing a diff for files in a branch other than the currently checked
         out, the diff will most probably be incorrect.<br/>
+        This plugin is available under <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>
+        However, there are two special cases:
+        <ul>
+            <li>if you happen to be <a href="https://github.com/gsaslis">Yorgos</a>, then you will have to pay the <a href="https://github.com/JChrist">plugin author</a> a hefty 10€ price for *each* branch updated</li>
+            <li>If you are <a href="https://github.com/tdakanalis">Themistoklis</a>, you will have to pay the <a href="https://github.com/JChrist">plugin author</a> 1€ each time you mention that during the plugin's update process, your PC load increases (it's your PC, not the plugin)</li>
+        </ul>
     ]]></description>
 
     <change-notes><![CDATA[
         <ul>
             <li>
                 0.3.0: Added configuration settings for GitExtender, offering options to control
-                whether it will perform fast-forward-only merges, or if it will attempt simple merge and abort on error
-                Also, instead of starting a thread for each module, it now uses an Executor with as many threads as there
-                are available cores
+                whether it will perform fast-forward-only merges, or if it will attempt simple merge and abort on error.
+                Settings can be accessed via File->Settings->Other Settings->GitExtender Settings.
+                Switched to java 8 support, so running it will require that the IDE runs on java 8
             </li>
             <li>
                 0.2.0: Keeping track of updated files, as results to be displayed after updating. ***Requires latest version: 145***
@@ -40,14 +47,15 @@
                 Changed jdk to 1.7, so that the plugin works with IDEA running with 1.7 jdk
                 Added check if any staged or unstaged changes exist in each repository, in order to stash only if needed</li>
             <li>0.1:
-                Initial version of Git Extender, with support for updating all local branches tracking a remote of all git roots
-in the current project, using rebase for all local commits and automatic stashing/popping of uncommitted changes</li>
+                Initial version of Git Extender, with support for updating all local branches
+                tracking a remote of all git roots in the current project,
+                using rebase for all local commits and automatic stashing/popping of uncommitted changes</li>
         </ul>
     ]]>
     </change-notes>
 
     <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-    <idea-version since-build="145"/>
+    <idea-version since-build="2016.3"/>
 
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.vcs</depends>

@@ -24,7 +24,7 @@ intellij {
 }
 
 group 'gr.jchrist'
-version '0.3-SNAPSHOT'
+version '0.3.0'
 
 apply plugin: 'java'
 sourceCompatibility = '1.8'
