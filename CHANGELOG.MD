@@ -1,19 +1,24 @@
 Changelog
 ---------
 
+## 0.3.0 (2017-01-23)
+- Moved plugin build to gradle and added !**tests**, as well as Travis CI builds.
+- Added settings page, for controlling whether merge-abort-on-error will be attempted
+- Added Apache License Version 2.0 reference.
+
 ## 0.2.0 (2016-04-02)
--- Keeping track of updated files, as results to be displayed after updating
+- Keeping track of updated files, as results to be displayed after updating
 
 ## 0.1.3 (2016-02-13)
--- Changed pull method from rebase to merge, with the --ff-only flag (fast-forward only)
+- Changed pull method from rebase to merge, with the --ff-only flag (fast-forward only)
 
 ## 0.1.2 (2015-07-17)
--- Using GitFetcher to fetch and prune remotes and show results before starting the update 
+- Using GitFetcher to fetch and prune remotes and show results before starting the update 
 
 ## 0.1.1 (2015-06-29)
--- Changed jdk to 1.7, so that the plugin works with IDEA running with 1.7 jdk
--- Added check if any staged or unstaged changes exist in each repository, in order to stash only if needed
+- Changed jdk to 1.7, so that the plugin works with IDEA running with 1.7 jdk
+- Added check if any staged or unstaged changes exist in each repository, in order to stash only if needed
 
 ## 0.1 (2015-06-28)
--- Initial version of Git Extender, with support for updating all local branches tracking a remote of all git roots
+- Initial version of Git Extender, with support for updating all local branches tracking a remote of all git roots
 in the current project, using rebase for all local commits and automatic stashing/popping of uncommitted changes
