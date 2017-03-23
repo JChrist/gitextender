@@ -10,8 +10,8 @@ plugins {
 
 intellij {
     type = 'IC'
-    version = '2016.3'
-    updateSinceUntilBuild = true
+    //version = '2016.3'
+    updateSinceUntilBuild = false
     downloadSources = true
     plugins 'git4idea' //comma separated list of plugins to depend on
     pluginName 'gitextender'
