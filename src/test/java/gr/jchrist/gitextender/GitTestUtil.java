@@ -111,14 +111,6 @@ public class GitTestUtil {
         return notification.getTitle() + "|" + notification.getContent();
     }
 
-    public static GitLogProvider findGitLogProvider(@NotNull Project project) {
-        List<VcsLogProvider> providers =
-                ContainerUtil.filter(Extensions.getExtensions(VcsLogManager.LOG_PROVIDER_EP, project),
-                        provider -> provider.getSupportedVcs().equals(GitVcs.getKey()));
-        assertEquals("Incorrect number of GitLogProviders", 1, providers.size());
-        return (GitLogProvider)providers.get(0);
-    }
-
     @SuppressWarnings("unchecked")
     @NotNull
     public static <T> T overrideService(@NotNull Project project, Class<? super T> serviceInterface, Class<T> serviceImplementation) {
