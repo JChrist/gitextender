@@ -1,7 +1,7 @@
 <idea-plugin version="2">
     <id>gr.jchrist.gitextender</id>
     <name>Git Extender</name>
-    <version>0.3.0</version>
+    <version>0.3.1</version>
     <vendor email="io.christod@gmail.com" url="https://github.com/JChrist/gitextender">JChrist</vendor>
 
     <description><![CDATA[
@@ -31,6 +31,9 @@
 
     <change-notes><![CDATA[
         <ul>
+            <li>
+                0.3.1: Removed until build version from plugin.xml, so that the plugin is compatible with latest releases
+            </li>
             <li>
                 0.3.0: Added configuration settings for GitExtender, offering options to control
                 whether it will perform fast-forward-only merges, or if it will attempt simple merge and abort on error.

@@ -1,6 +1,9 @@
 Changelog
 ---------
 
+## 0.3.1 (2017-03-23)
+- Removed until version in plugin.xml, so that it is compatible with latest releases
+
 ## 0.3.0 (2017-01-23)
 - Moved plugin build to gradle and added !**tests**, as well as Travis CI builds.
 - Added settings page, for controlling whether merge-abort-on-error will be attempted
