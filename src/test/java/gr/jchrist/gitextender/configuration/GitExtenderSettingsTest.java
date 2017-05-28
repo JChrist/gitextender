@@ -26,42 +26,10 @@ public class GitExtenderSettingsTest {
     }
 
     @Test
-    public void getInstance() throws Exception {
-        GitExtenderSettings ges = GitExtenderSettings.getInstance();
-        assertThat(ges).isNotNull();
-
-        GitExtenderSettings state = ges.getState();
-        assertThat(state).isSameAs(ges);
-    }
-
-    @Test
-    public void testLoadState() throws Exception {
-        GitExtenderSettings ges = new GitExtenderSettings();
-        GitExtenderSettings loaded = new GitExtenderSettings();
-        loaded.attemptMergeAbort = true;
-        ges.attemptMergeAbort = false;
-
-        ges.loadState(loaded);
-        assertThat(ges)
-                .as("unexpected settings after loading")
-                .isEqualToComparingFieldByField(loaded);
-    }
-
-    @Test
     public void testGetAttemptMergeAbort() throws Exception {
-        GitExtenderSettings ges = new GitExtenderSettings();
-        ges.attemptMergeAbort = true;
-        assertThat(ges.getAttemptMergeAbort())
-                .as("get failure")
-                .isTrue();
-    }
-
-    @Test
-    public void testSetAttemptMergeAbort() throws Exception {
-        GitExtenderSettings ges = new GitExtenderSettings();
+        GitExtenderSettings ges = new GitExtenderSettings(false);
+        assertThat(ges.getAttemptMergeAbort()).as("get failure").isFalse();
         ges.setAttemptMergeAbort(true);
-        assertThat(ges.attemptMergeAbort)
-                .as("set failure")
-                .isTrue();
+        assertThat(ges.getAttemptMergeAbort()).as("get failure").isTrue();
     }
 }

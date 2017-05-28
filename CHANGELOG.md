@@ -1,6 +1,10 @@
 Changelog
 ---------
 
+## 0.4.0 ()
+- For projects with multiple modules as separate Git roots, a dialog will open up, offering the option to select which module(s) to update. 
+- Refactored persisted configuration settings.
+
 ## 0.3.1 (2017-03-23)
 - Removed until version in plugin.xml, so that it is compatible with latest releases
 

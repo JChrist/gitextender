@@ -1,7 +1,7 @@
-<idea-plugin version="2">
+<idea-plugin>
     <id>gr.jchrist.gitextender</id>
     <name>Git Extender</name>
-    <version>0.3.1</version>
+    <version>0.4.0</version>
     <vendor email="io.christod@gmail.com" url="https://github.com/JChrist/gitextender">JChrist</vendor>
 
     <description><![CDATA[
@@ -22,15 +22,23 @@
         However, when performing a diff for files in a branch other than the currently checked
         out, the diff will most probably be incorrect.<br/>
         This plugin is available under <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>
-        However, there are two special cases:
+        However, there are two special cases. The following people must pay
+        the <a href="https://github.com/JChrist">plugin author</a> a hefty 10€ price,
+        for each new version of the plugin that they download:
         <ul>
-            <li>if you happen to be <a href="https://github.com/gsaslis">Yorgos</a>, then you will have to pay the <a href="https://github.com/JChrist">plugin author</a> a hefty 10€ price for *each* branch updated</li>
-            <li>If you are <a href="https://github.com/tdakanalis">Themistoklis</a>, you will have to pay the <a href="https://github.com/JChrist">plugin author</a> 1€ each time you mention that during the plugin's update process, your PC load increases (it's your PC, not the plugin)</li>
+            <li><a href="https://github.com/gsaslis">Yorgos</a></li>
+            <li><a href="https://github.com/tdakanalis">Themistoklis</a></li>
         </ul>
     ]]></description>
 
     <change-notes><![CDATA[
         <ul>
+            <li>
+                0.4.0:
+                For projects with multiple modules as separate Git roots, a dialog will open up,
+                offering the option to select which module(s) to update.
+                Refactored persisted configuration settings.
+            </li>
             <li>
                 0.3.1: Removed until build version from plugin.xml, so that the plugin is compatible with latest releases
             </li>
@@ -66,15 +74,9 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
-        <!-- Configuration state service ( persistable settings ) -->
-        <applicationService serviceInterface="gr.jchrist.gitextender.configuration.GitExtenderSettings"
-                            serviceImplementation="gr.jchrist.gitextender.configuration.GitExtenderSettings"/>
-
         <!-- provider for the configurable instance ( configuration settings ) -->
-        <applicationConfigurable id="GitLabConfigurableProvider"
+        <applicationConfigurable id="GitExtenderConfigurableProvider"
                                  provider="gr.jchrist.gitextender.configuration.SettingsConfigurableProvider"/>
-        <projectService serviceInterface="gr.jchrist.gitextender.configuration.ProjectState"
-                        serviceImplementation="gr.jchrist.gitextender.configuration.ProjectState"/>
     </extensions>
 
     <application-components>

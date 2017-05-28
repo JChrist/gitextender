@@ -1,6 +1,5 @@
 package gr.jchrist.gitextender;
 
-import com.intellij.dvcs.DvcsUtil;
 import com.intellij.openapi.application.AccessToken;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
@@ -46,7 +45,7 @@ public class BackgroundableRepoUpdateTask extends Task.Backgroundable {
     }
 
     protected void allUpdatesFinished() {
-        DvcsUtil.workingTreeChangeFinished(repo.getProject(), accessToken);
+        accessToken.finish();
         NotificationUtil.showInfoNotification("Update Completed", "Git Extender updated all projects");
     }
 }

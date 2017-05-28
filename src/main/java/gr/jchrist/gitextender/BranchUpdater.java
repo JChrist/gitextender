@@ -1,5 +1,6 @@
 package gr.jchrist.gitextender;
 
+import com.intellij.openapi.diagnostic.Logger;
 import git4idea.commands.Git;
 import git4idea.repo.GitBranchTrackInfo;
 import git4idea.repo.GitRepository;
@@ -12,6 +13,8 @@ import org.jetbrains.annotations.NotNull;
  * @since 2016/03/27
  */
 public class BranchUpdater {
+    private static final Logger logger = Logger.getInstance(BranchUpdater.class);
+
     private final Git git;
     private final GitRepository repo;
 
@@ -61,10 +64,10 @@ public class BranchUpdater {
             // this is controlled with a user setting flag,
             // because it might be dangerous in case abort fails
             if (Boolean.TRUE.equals(gitExtenderSettings.getAttemptMergeAbort())) {
-                System.out.println("fast-forward merge failed, attempting simple merge");
+                logger.info("fast-forward merge failed, attempting simple merge");
                 mergeAbortIfFailed();
             } else {
-                System.out.println("fast-forward merge failed, NOT attempting simple merge");
+                logger.info("fast-forward merge failed, NOT attempting simple merge");
             }
         }
 

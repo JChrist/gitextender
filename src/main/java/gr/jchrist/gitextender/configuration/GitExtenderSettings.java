@@ -1,34 +1,15 @@
 package gr.jchrist.gitextender.configuration;
 
-import com.intellij.openapi.components.PersistentStateComponent;
-import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.components.State;
-import com.intellij.openapi.components.Storage;
-import com.intellij.util.xmlb.XmlSerializerUtil;
-import org.jetbrains.annotations.Nullable;
+public class GitExtenderSettings {
+    private boolean attemptMergeAbort;
 
-@State(
-        name = "GitExtenderSettings",
-        storages = {
-                @Storage(id = "default", file = "$APP_CONFIG$/gitextender-settings.xml")
-        }
-)
-public class GitExtenderSettings implements PersistentStateComponent<GitExtenderSettings> {
-    public boolean attemptMergeAbort;
+    public GitExtenderSettings() {
+        this(false);
 
-    public static GitExtenderSettings getInstance() {
-        return ServiceManager.getService(GitExtenderSettings.class);
     }
 
-    @Nullable
-    @Override
-    public GitExtenderSettings getState() {
-        return this;
-    }
-
-    @Override
-    public void loadState(GitExtenderSettings gitExtenderSettings) {
-        XmlSerializerUtil.copyBean(gitExtenderSettings, this);
+    public GitExtenderSettings(boolean attemptMergeAbort) {
+        this.attemptMergeAbort = attemptMergeAbort;
     }
 
     public boolean getAttemptMergeAbort() {
@@ -37,5 +18,28 @@ public class GitExtenderSettings implements PersistentStateComponent<GitExtender
 
     public void setAttemptMergeAbort(boolean attemptMergeAbort) {
         this.attemptMergeAbort = attemptMergeAbort;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        GitExtenderSettings settings = (GitExtenderSettings) o;
+
+        return attemptMergeAbort == settings.attemptMergeAbort;
+    }
+
+    @Override
+    public int hashCode() {
+        return (attemptMergeAbort ? 1 : 0);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("GitExtenderSettings{");
+        sb.append("attemptMergeAbort=").append(attemptMergeAbort);
+        sb.append('}');
+        return sb.toString();
     }
 }
