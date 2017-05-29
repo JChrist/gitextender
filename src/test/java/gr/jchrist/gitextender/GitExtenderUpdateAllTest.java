@@ -246,4 +246,133 @@ public class GitExtenderUpdateAllTest {
             task2.queue();
         }};
     }
+
+    @Test
+    public void actionPerformedNoProject (
+            @Mocked final AnActionEvent event,
+            @Mocked final NotificationUtil notificationUtil
+    ) throws Exception {
+        new Expectations() {{
+            event.getProject(); result = null;
+        }};
+
+        GitExtenderUpdateAll updater = new GitExtenderUpdateAll();
+        updater.actionPerformed(event);
+
+        new Verifications() {{
+            NotificationUtil.showErrorNotification("Update Failed", anyString);
+        }};
+    }
+
+    @Test
+    public void actionPerformedError (
+            @Mocked final AnActionEvent event,
+            @Mocked final NotificationUtil notificationUtil
+    ) throws Exception {
+        new Expectations() {{
+            event.getProject(); result = new Exception("test exception during action performed");
+        }};
+
+        GitExtenderUpdateAll updater = new GitExtenderUpdateAll();
+        updater.actionPerformed(event);
+
+        new Verifications() {{
+            NotificationUtil.showErrorNotification("Update Failed", anyString);
+        }};
+    }
+
+    @Test
+    public void actionPerformedNoManager (
+            @Mocked final AnActionEvent event,
+            @Mocked final NotificationUtil notificationUtil,
+            @Mocked final Project project
+    ) throws Exception {
+        GitExtenderUpdateAll updater = new GitExtenderUpdateAll();
+
+        new Expectations() {{
+            event.getProject(); result = project;
+            project.getComponent(VcsRepositoryManager.class); result = null;
+        }};
+
+        updater.actionPerformed(event);
+
+        new Verifications() {{
+            NotificationUtil.showErrorNotification("Update Failed", anyString);
+        }};
+    }
+
+    @Test
+    public void actionPerformedNoRepositories (
+            @Mocked final AnActionEvent event,
+            @Mocked final NotificationUtil notificationUtil,
+            @Mocked final Project project,
+            @Mocked final GitRepositoryManager manager
+    ) throws Exception {
+        GitExtenderUpdateAll updater = new GitExtenderUpdateAll();
+
+        new Expectations() {{
+            event.getProject(); result = project;
+            manager.getRepositories(); result = Collections.emptyList();
+        }};
+
+        updater.actionPerformed(event);
+
+        new Verifications() {{
+            NotificationUtil.showErrorNotification("Update Failed", anyString);
+        }};
+    }
+
+    @Test
+    public void actionPerformedCanceledFromDialog (
+            @Mocked final AnActionEvent event,
+            @Mocked final NotificationUtil notificationUtil,
+            @Mocked final Project project,
+            @Mocked final GitRepositoryManager manager,
+            @Mocked final GitRepository gitRepository,
+            @Mocked final ProjectSettingsHandler settingsHandler,
+            @Mocked final VcsImplUtil vcsImplUtil,
+            @Mocked final SelectModuleDialog dialog
+    ) throws Exception {
+        GitExtenderUpdateAll updater = new GitExtenderUpdateAll();
+
+        new Expectations() {{
+            event.getProject(); result = project;
+            manager.getRepositories(); result = Arrays.asList(gitRepository, gitRepository);
+            VcsImplUtil.getShortVcsRootName(project, (VirtualFile) any); result = "test";
+            dialog.showAndGet(); result = false;
+        }};
+
+        updater.actionPerformed(event);
+
+        new Verifications() {{
+            NotificationUtil.showInfoNotification("Update Canceled", anyString);
+        }};
+    }
+
+    @Test
+    public void actionPerformedNothingSelectedFromDialog (
+            @Mocked final AnActionEvent event,
+            @Mocked final NotificationUtil notificationUtil,
+            @Mocked final Project project,
+            @Mocked final GitRepositoryManager manager,
+            @Mocked final GitRepository gitRepository,
+            @Mocked final ProjectSettingsHandler settingsHandler,
+            @Mocked final VcsImplUtil vcsImplUtil,
+            @Mocked final SelectModuleDialog dialog
+    ) throws Exception {
+        GitExtenderUpdateAll updater = new GitExtenderUpdateAll();
+
+        new Expectations() {{
+            event.getProject(); result = project;
+            manager.getRepositories(); result = Arrays.asList(gitRepository, gitRepository);
+            VcsImplUtil.getShortVcsRootName(project, (VirtualFile) any); result = "test";
+            dialog.showAndGet(); result = true;
+        }};
+
+        updater.actionPerformed(event);
+
+        new Verifications() {{
+            NotificationUtil.showInfoNotification("Update Canceled", anyString);
+        }};
+    }
 }

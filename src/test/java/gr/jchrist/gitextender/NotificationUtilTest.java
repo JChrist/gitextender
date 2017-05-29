@@ -9,6 +9,9 @@ import mockit.integration.junit4.JMockit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(JMockit.class)
@@ -39,5 +42,13 @@ public class NotificationUtilTest {
             assertThat(notif.getContent()).as("unexpected notification content").isEqualTo(content);
             assertThat(notif.getType()).as("unexpected notification type").isEqualTo(NotificationType.INFORMATION);
         }};
+    }
+
+    @Test
+    public void newNotificationUtil() throws Exception {
+        Constructor<NotificationUtil> constructor = NotificationUtil.class.getDeclaredConstructor();
+        assertThat(Modifier.isPrivate(constructor.getModifiers())).isTrue();
+        constructor.setAccessible(true);
+        constructor.newInstance();
     }
 }

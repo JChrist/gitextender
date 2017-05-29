@@ -32,13 +32,6 @@ public class SettingsViewTest {
     }
 
     @Test
-    public void testSetup() throws Exception {
-        settingsView.setup();
-        assertThat(settingsView.getMainPanel()).isNotNull();
-        assertThat(settingsView.getAttemptMergeAbort()).isNotNull();
-    }
-
-    @Test
     public void testGetId() throws Exception {
         assertThat(settingsView.getId()).isEqualTo(SettingsView.DIALOG_TITLE);
     }

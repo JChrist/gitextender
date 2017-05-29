@@ -14,10 +14,10 @@ public class SelectModuleDialog extends DialogWrapper {
     private final List<String> repos;
 
     private JPanel contentPane;
-    private JButton selectAllBtn;
-    private JButton selectNoneBtn;
     private JScrollPane scrollPane;
-    private ElementsChooser<String> repoChooser;
+    protected JButton selectAllBtn;
+    protected JButton selectNoneBtn;
+    protected ElementsChooser<String> repoChooser;
 
     public SelectModuleDialog(@NotNull ProjectSettingsHandler projectSettingsHandler, @NotNull List<String> repos) {
         super(projectSettingsHandler.getProject());

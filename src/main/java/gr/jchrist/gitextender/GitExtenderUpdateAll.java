@@ -75,7 +75,7 @@ public class GitExtenderUpdateAll extends AnAction {
             updateRepositories(project, reposToUpdate);
         } catch (Exception | Error e) {
             logger.warn("error updating project due to exception", e);
-            NotificationUtil.showErrorNotification("Git Extender Update Failed", "Git Extender failed to update the project due to exception: " + e);
+            NotificationUtil.showErrorNotification("Update Failed", "Git Extender failed to update the project due to exception: " + e);
         }
     }
 

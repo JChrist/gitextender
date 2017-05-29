@@ -6,6 +6,10 @@ import com.intellij.notification.Notifications;
 import org.jetbrains.annotations.NotNull;
 
 public class NotificationUtil {
+    private NotificationUtil() {
+        //no instances should be created
+    }
+
     public static final String NOTIFICATION_GROUP_ID = "Git Extender";
 
     public static void showErrorNotification(@NotNull String title, @NotNull String content) {

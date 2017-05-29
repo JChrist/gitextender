@@ -5,6 +5,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProjectSettingsHandlerTest {
@@ -53,30 +55,20 @@ public class ProjectSettingsHandlerTest {
 
         handler.clearSelectedModules();
         assertThat(handler.loadSelectedModules()).as("expected no modules selected initially").isEmpty();
-    }
 
-    @Test
-    public void addRemoveModule() throws Exception {
-    }
-
-    @Test
-    public void addSelectedModule() throws Exception {
-    }
-
-    @Test
-    public void removeSelectedModule() throws Exception {
+        handler.addSelectedModule(module1);
+        handler.removeSelectedModule(module1);
+        assertThat(handler.loadSelectedModules()).as("expected no modules selected initially").isEmpty();
     }
 
     @Test
     public void setSelectedModules() throws Exception {
-    }
-
-    @Test
-    public void clearSelectedModules() throws Exception {
+        handler.setSelectedModules(Arrays.asList("module1", "module2"));
+        assertThat(handler.loadSelectedModules()).containsExactly("module1", "module2");
     }
 
     @Test
     public void getProject() throws Exception {
+        assertThat(handler.getProject()).isEqualTo(base.getProject());
     }
-
 }

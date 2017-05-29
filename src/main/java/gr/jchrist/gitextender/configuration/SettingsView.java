@@ -23,10 +23,6 @@ public class SettingsView implements SearchableConfigurable {
         this.originalSavedSettings = settingsHandler.loadSettings();
     }
 
-    public void setup() {
-
-    }
-
     @NotNull
     @Override
     public String getId() {

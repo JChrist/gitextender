@@ -34,7 +34,30 @@ public class SelectModuleDialogTest {
         base.invokeTestRunnable(() -> {
             SelectModuleDialog smd = new SelectModuleDialog(projectSettingsHandler, testRepos);
             assertThat(smd).isNotNull();
+        });
+    }
 
+    @Test
+    public void selectAllNone() throws Exception {
+        base.invokeTestRunnable(() -> {
+            SelectModuleDialog smd = new SelectModuleDialog(projectSettingsHandler, testRepos);
+            assertThat(smd).isNotNull();
+            smd.selectAllBtn.doClick();
+            assertThat(smd.repoChooser.getMarkedElements()).hasSize(testRepos.size()).containsAll(testRepos);
+            assertThat(projectSettingsHandler.loadSelectedModules()).hasSize(testRepos.size()).containsAll(testRepos);
+            smd.selectNoneBtn.doClick();
+            assertThat(smd.repoChooser.getMarkedElements()).isEmpty();
+            assertThat(projectSettingsHandler.loadSelectedModules()).isEmpty();
+        });
+    }
+
+    @Test
+    public void savedSelectedModules() throws Exception {
+        projectSettingsHandler.setSelectedModules(Arrays.asList(testRepos.get(0), "invalid module"));
+        base.invokeTestRunnable(() -> {
+            SelectModuleDialog smd = new SelectModuleDialog(projectSettingsHandler, testRepos);
+            assertThat(smd).isNotNull();
+            assertThat(smd.repoChooser.getMarkedElements()).hasSize(1).contains(testRepos.get(0));
         });
     }
 }

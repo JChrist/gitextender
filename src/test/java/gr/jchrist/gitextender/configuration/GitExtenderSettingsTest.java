@@ -27,9 +27,31 @@ public class GitExtenderSettingsTest {
 
     @Test
     public void testGetAttemptMergeAbort() throws Exception {
-        GitExtenderSettings ges = new GitExtenderSettings(false);
+        GitExtenderSettings ges = new GitExtenderSettings();
         assertThat(ges.getAttemptMergeAbort()).as("get failure").isFalse();
         ges.setAttemptMergeAbort(true);
         assertThat(ges.getAttemptMergeAbort()).as("get failure").isTrue();
+    }
+
+    @Test
+    public void testEquals() throws Exception {
+        GitExtenderSettings settings = new GitExtenderSettings();
+        GitExtenderSettings settings2 = new GitExtenderSettings();
+        assertThat(settings.equals(settings2)).isTrue();
+        assertThat(settings.equals(new Object())).isFalse();
+        assertThat(settings.equals(new GitExtenderSettings())).isTrue();
+        assertThat(settings.equals(new GitExtenderSettings(true))).isFalse();
+    }
+
+    @Test
+    public void testHashcode() throws Exception {
+        assertThat(new GitExtenderSettings().hashCode()).isZero();
+        assertThat(new GitExtenderSettings(true).hashCode()).isOne();
+    }
+
+    @Test
+    public void testToString() throws Exception {
+        assertThat(new GitExtenderSettings().toString()).contains("attemptMergeAbort=false");
+        assertThat(new GitExtenderSettings(true).toString()).contains("attemptMergeAbort=true");
     }
 }
