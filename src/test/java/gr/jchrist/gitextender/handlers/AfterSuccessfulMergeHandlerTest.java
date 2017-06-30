@@ -3,11 +3,13 @@ package gr.jchrist.gitextender.handlers;
 import com.intellij.history.LocalHistory;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vcs.changes.VcsAnnotationRefresher;
 import com.intellij.openapi.vcs.changes.committed.CommittedChangesCache;
 import com.intellij.openapi.vcs.update.*;
 import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.ContentUtilEx;
 import git4idea.merge.MergeChangeCollector;
@@ -140,10 +142,15 @@ public class AfterSuccessfulMergeHandlerTest {
 
     @Test
     public void generateUpdateInfoTreeWithNoContentManager(
+            @Mocked final Project project,
+            @Mocked final ToolWindowManager toolWindowManager,
             @Mocked final ToolWindow changes
     ) throws Exception {
         new Expectations() {{
-            mergeState.getProject().isOpen(); result = true;
+            mergeState.getProject(); result = project;
+            ToolWindowManager.getInstance(project); result = toolWindowManager;
+            toolWindowManager.getToolWindow(ToolWindowId.VCS); result = changes;
+            project.isOpen(); result = true;
             changes.getContentManager(); result = null;
         }};
 
@@ -152,10 +159,15 @@ public class AfterSuccessfulMergeHandlerTest {
 
     @Test
     public void showUpdateInfoTreeWithNoContentManager(
+            @Mocked final Project project,
+            @Mocked final ToolWindowManager toolWindowManager,
             @Mocked final ToolWindow changes
-    ) throws Exception {
+            ) throws Exception {
         new Expectations() {{
-            mergeState.getProject().isOpen(); result = true;
+            mergeState.getProject(); result = project;
+            ToolWindowManager.getInstance(project); result = toolWindowManager;
+            toolWindowManager.getToolWindow(ToolWindowId.VCS); result = changes;
+            project.isOpen(); result = true;
             changes.getContentManager(); result = null;
         }};
 
