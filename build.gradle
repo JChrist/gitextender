@@ -35,7 +35,7 @@ repositories {
 }
 
 dependencies {
-    testCompile 'org.jmockit:jmockit:1.31'
+    testCompile 'org.jmockit:jmockit:1.33'
     testCompile 'junit:junit:4.12'
     testCompile 'org.assertj:assertj-core:3.8.0'
 }
