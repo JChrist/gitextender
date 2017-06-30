@@ -20,7 +20,6 @@ public class SettingsDialog extends DialogWrapper {
     protected void init() {
         super.init();
         setTitle("Git Extender Settings");
-        settingsView.setup();
     }
 
     @Nullable

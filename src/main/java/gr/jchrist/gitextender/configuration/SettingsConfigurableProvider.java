@@ -9,9 +9,6 @@ public class SettingsConfigurableProvider extends ConfigurableProvider {
     @Nullable
     @Override
     public Configurable createConfigurable() {
-        SettingsView settingsView = new SettingsView();
-        settingsView.setup();
-        return settingsView;
+        return new SettingsView();
     }
-
 }

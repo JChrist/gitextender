@@ -28,7 +28,7 @@ public class SettingsDialogTest {
     @Test
     public void testInit() throws Exception {
         base.invokeTestRunnable(() -> {
-            SettingsDialog sd = new SettingsDialog(base.getFixture().getProject());
+            SettingsDialog sd = new SettingsDialog(base.getProject());
             assertThat(sd).isNotNull();
             assertThat(sd.getSettingsView()).isNotNull();
             assertThat(sd.getSettingsView().getMainPanel()).isNotNull();
@@ -38,7 +38,7 @@ public class SettingsDialogTest {
     @Test
     public void testValidation() throws Exception {
         base.invokeTestRunnable(() -> {
-            SettingsDialog sd = new SettingsDialog(base.getFixture().getProject());
+            SettingsDialog sd = new SettingsDialog(base.getProject());
             assertThat(sd.doValidate()).isNull();
         });
     }

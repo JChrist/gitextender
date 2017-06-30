@@ -21,7 +21,7 @@ public class SettingsViewTest {
         base = TestingUtil.getBaseTest();
         base.setUp();
         GitTestUtil.overrideService(GitExtenderSettings.class, GitExtenderSettings.class);
-        GitExtenderSettings settings = GitExtenderSettings.getInstance();
+        GitExtenderSettings settings = new GitExtenderSettings();
         assertThat(settings).isNotNull();
         settingsView = new SettingsView();
     }
@@ -29,13 +29,6 @@ public class SettingsViewTest {
     @After
     public void after() throws Exception {
         base.tearDown();
-    }
-
-    @Test
-    public void testSetup() throws Exception {
-        settingsView.setup();
-        assertThat(settingsView.getMainPanel()).isNotNull();
-        assertThat(settingsView.getAttemptMergeAbort()).isNotNull();
     }
 
     @Test
@@ -73,23 +66,5 @@ public class SettingsViewTest {
         settingsView.disposeUIResources();
         assertThat(settingsView.getMainPanel()).isNull();
         assertThat(settingsView.getAttemptMergeAbort()).isNull();
-    }
-
-    @Test
-    public void testFill() throws Exception {
-        assertThat(settingsView.getAttemptMergeAbort().isSelected()).isFalse();
-        GitExtenderSettings ges = new GitExtenderSettings();
-        ges.attemptMergeAbort = true;
-        settingsView.fill(ges);
-        assertThat(settingsView.getAttemptMergeAbort().isSelected()).isTrue();
-    }
-
-    @Test
-    public void testSave() throws Exception {
-        assertThat(settingsView.save().getAttemptMergeAbort()).isFalse();
-        GitExtenderSettings ges = new GitExtenderSettings();
-        ges.attemptMergeAbort = true;
-        settingsView.fill(ges);
-        assertThat(settingsView.save().getAttemptMergeAbort()).isTrue();
     }
 }

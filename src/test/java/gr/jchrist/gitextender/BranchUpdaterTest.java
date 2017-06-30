@@ -81,7 +81,7 @@ public class BranchUpdaterTest {
             final @Mocked FastForwardOnlyMerger ffMerger,
             final @Mocked SimpleMerger simpleMerger
     ) throws Exception {
-        gitExtenderSettings.attemptMergeAbort = true;
+        gitExtenderSettings.setAttemptMergeAbort(true);
 
         new Expectations() {{
             gitRepository.getProject(); result = project;
@@ -136,7 +136,7 @@ public class BranchUpdaterTest {
             final @Mocked FastForwardOnlyMerger ffMerger,
             final @Mocked SimpleMerger simpleMerger
     ) throws Exception {
-        gitExtenderSettings.attemptMergeAbort = true;
+        gitExtenderSettings.setAttemptMergeAbort(true);
 
         new Expectations() {{
             gitRepository.getProject(); result = project;
@@ -173,7 +173,7 @@ public class BranchUpdaterTest {
             final @Mocked FastForwardOnlyMerger ffMerger,
             final @Mocked SimpleMerger simpleMerger
     ) throws Exception {
-        gitExtenderSettings.attemptMergeAbort = false;
+        gitExtenderSettings.setAttemptMergeAbort(false);
 
         new Expectations() {{
             gitRepository.getProject(); result = project;

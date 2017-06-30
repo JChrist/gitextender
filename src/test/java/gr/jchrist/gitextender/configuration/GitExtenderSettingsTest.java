@@ -26,42 +26,32 @@ public class GitExtenderSettingsTest {
     }
 
     @Test
-    public void getInstance() throws Exception {
-        GitExtenderSettings ges = GitExtenderSettings.getInstance();
-        assertThat(ges).isNotNull();
-
-        GitExtenderSettings state = ges.getState();
-        assertThat(state).isSameAs(ges);
-    }
-
-    @Test
-    public void testLoadState() throws Exception {
-        GitExtenderSettings ges = new GitExtenderSettings();
-        GitExtenderSettings loaded = new GitExtenderSettings();
-        loaded.attemptMergeAbort = true;
-        ges.attemptMergeAbort = false;
-
-        ges.loadState(loaded);
-        assertThat(ges)
-                .as("unexpected settings after loading")
-                .isEqualToComparingFieldByField(loaded);
-    }
-
-    @Test
     public void testGetAttemptMergeAbort() throws Exception {
         GitExtenderSettings ges = new GitExtenderSettings();
-        ges.attemptMergeAbort = true;
-        assertThat(ges.getAttemptMergeAbort())
-                .as("get failure")
-                .isTrue();
+        assertThat(ges.getAttemptMergeAbort()).as("get failure").isFalse();
+        ges.setAttemptMergeAbort(true);
+        assertThat(ges.getAttemptMergeAbort()).as("get failure").isTrue();
     }
 
     @Test
-    public void testSetAttemptMergeAbort() throws Exception {
-        GitExtenderSettings ges = new GitExtenderSettings();
-        ges.setAttemptMergeAbort(true);
-        assertThat(ges.attemptMergeAbort)
-                .as("set failure")
-                .isTrue();
+    public void testEquals() throws Exception {
+        GitExtenderSettings settings = new GitExtenderSettings();
+        GitExtenderSettings settings2 = new GitExtenderSettings();
+        assertThat(settings.equals(settings2)).isTrue();
+        assertThat(settings.equals(new Object())).isFalse();
+        assertThat(settings.equals(new GitExtenderSettings())).isTrue();
+        assertThat(settings.equals(new GitExtenderSettings(true))).isFalse();
+    }
+
+    @Test
+    public void testHashcode() throws Exception {
+        assertThat(new GitExtenderSettings().hashCode()).isZero();
+        assertThat(new GitExtenderSettings(true).hashCode()).isOne();
+    }
+
+    @Test
+    public void testToString() throws Exception {
+        assertThat(new GitExtenderSettings().toString()).contains("attemptMergeAbort=false");
+        assertThat(new GitExtenderSettings(true).toString()).contains("attemptMergeAbort=true");
     }
 }

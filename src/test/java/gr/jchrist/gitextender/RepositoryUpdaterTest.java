@@ -89,8 +89,7 @@ public class RepositoryUpdaterTest {
         repositoryUpdater.updateRepository();
 
         new Verifications() {{
-            NotificationUtil.showErrorNotification(anyString, anyString);
-            times = 0;
+            NotificationUtil.showErrorNotification(anyString, anyString); times = 0;
         }};
     }
 
@@ -103,7 +102,8 @@ public class RepositoryUpdaterTest {
         repositoryUpdater.updateRepository();
 
         new Verifications() {{
-            NotificationUtil.showErrorNotification(anyString, RepositoryUpdater.getMessage(RepositoryUpdater.REBASE_IN_PROGRESS, repoName));
+            NotificationUtil.showErrorNotification(anyString,
+                    RepositoryUpdater.getMessage(RepositoryUpdater.REBASE_IN_PROGRESS, repoName));
         }};
     }
 
@@ -116,7 +116,8 @@ public class RepositoryUpdaterTest {
         repositoryUpdater.updateRepository();
 
         new Verifications() {{
-            NotificationUtil.showErrorNotification(anyString, RepositoryUpdater.getMessage(RepositoryUpdater.NO_REMOTES, repoName));
+            NotificationUtil.showErrorNotification(anyString,
+                    RepositoryUpdater.getMessage(RepositoryUpdater.NO_REMOTES, repoName));
         }};
     }
 
@@ -129,7 +130,8 @@ public class RepositoryUpdaterTest {
         repositoryUpdater.updateRepository();
 
         new Verifications() {{
-            NotificationUtil.showErrorNotification(anyString, RepositoryUpdater.getMessage(RepositoryUpdater.NO_CURRENT_BRANCH, repoName));
+            NotificationUtil.showErrorNotification(anyString,
+                    RepositoryUpdater.getMessage(RepositoryUpdater.NO_CURRENT_BRANCH, repoName));
         }};
     }
 
@@ -145,7 +147,8 @@ public class RepositoryUpdaterTest {
         repositoryUpdater.updateRepository();
 
         new Verifications() {{
-            NotificationUtil.showErrorNotification(anyString, withPrefix(RepositoryUpdater.getMessage(RepositoryUpdater.FAILED_HAS_CHANGES, repoName)));
+            NotificationUtil.showErrorNotification(anyString,
+                    withPrefix(RepositoryUpdater.getMessage(RepositoryUpdater.FAILED_HAS_CHANGES, repoName)));
         }};
     }
 
@@ -161,7 +164,8 @@ public class RepositoryUpdaterTest {
         repositoryUpdater.updateRepository();
 
         new Verifications() {{
-            NotificationUtil.showErrorNotification(anyString, withPrefix(RepositoryUpdater.getMessage(RepositoryUpdater.NO_STASH, repoName)));
+            NotificationUtil.showErrorNotification(anyString,
+                    withPrefix(RepositoryUpdater.getMessage(RepositoryUpdater.NO_STASH, repoName)));
         }};
     }
 
@@ -236,7 +240,7 @@ public class RepositoryUpdaterTest {
         final String local = "local";
         final String remote = "remote";
 
-        settings.attemptMergeAbort = false;
+        settings.setAttemptMergeAbort(false);
 
         new Expectations() {{
             repo.isRebaseInProgress(); result = false;
@@ -288,7 +292,7 @@ public class RepositoryUpdaterTest {
     public void MergeErrorAborted() throws Exception {
         final String local = "local";
         final String remote = "remote";
-        settings.attemptMergeAbort = true;
+        settings.setAttemptMergeAbort(true);
 
         new Expectations() {{
             repo.isRebaseInProgress(); result = false;
@@ -341,7 +345,7 @@ public class RepositoryUpdaterTest {
     public void MergeErrorNotAborted() throws Exception {
         final String local = "local";
         final String remote = "remote";
-        settings.attemptMergeAbort = true;
+        settings.setAttemptMergeAbort(true);
 
         new Expectations() {{
             repo.isRebaseInProgress(); result = false;

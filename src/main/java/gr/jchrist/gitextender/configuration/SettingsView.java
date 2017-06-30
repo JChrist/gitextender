@@ -9,19 +9,18 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 
 public class SettingsView implements SearchableConfigurable {
-
     public static final String DIALOG_TITLE = "GitExtender Settings";
-    GitExtenderSettings gitExtenderSettings = GitExtenderSettings.getInstance();
+    private GitExtenderSettingsHandler settingsHandler;
+    private GitExtenderSettings originalSavedSettings;
 
     private JPanel mainPanel;
     private JCheckBox attemptMergeAbort;
 
     public SettingsView() {
         super();
-    }
 
-    public void setup() {
-
+        this.settingsHandler = new GitExtenderSettingsHandler();
+        this.originalSavedSettings = settingsHandler.loadSettings();
     }
 
     @NotNull
@@ -51,20 +50,20 @@ public class SettingsView implements SearchableConfigurable {
 
     @Override
     public boolean isModified() {
-        GitExtenderSettings save = save();
-        return save == null
-                || !save.getAttemptMergeAbort() == gitExtenderSettings.getAttemptMergeAbort();
+        GitExtenderSettings selected = selected();
+        return selected == null || !selected.equals(originalSavedSettings);
     }
 
     @Override
     public void apply() throws ConfigurationException {
-        GitExtenderSettings save = save();
-        gitExtenderSettings.setAttemptMergeAbort(save.getAttemptMergeAbort());
+        GitExtenderSettings selected = selected();
+        settingsHandler.saveSettings(selected);
+        originalSavedSettings = settingsHandler.loadSettings();
     }
 
     @Override
     public void reset() {
-        fill(gitExtenderSettings);
+        attemptMergeAbort.setSelected(originalSavedSettings != null && originalSavedSettings.getAttemptMergeAbort());
     }
 
     @Override
@@ -73,14 +72,8 @@ public class SettingsView implements SearchableConfigurable {
         attemptMergeAbort = null;
     }
 
-    protected void fill(GitExtenderSettings gitExtenderSettings) {
-        attemptMergeAbort.setSelected(gitExtenderSettings != null && gitExtenderSettings.getAttemptMergeAbort());
-    }
-
-    protected GitExtenderSettings save() {
-        GitExtenderSettings ss = new GitExtenderSettings();
-        ss.attemptMergeAbort = attemptMergeAbort != null && attemptMergeAbort.isSelected();
-        return ss;
+    protected GitExtenderSettings selected() {
+        return new GitExtenderSettings(attemptMergeAbort != null && attemptMergeAbort.isSelected());
     }
 
     JPanel getMainPanel() {

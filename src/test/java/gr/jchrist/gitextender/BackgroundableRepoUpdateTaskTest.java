@@ -1,6 +1,5 @@
 package gr.jchrist.gitextender;
 
-import com.intellij.dvcs.DvcsUtil;
 import com.intellij.openapi.application.AccessToken;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
@@ -24,11 +23,10 @@ public class BackgroundableRepoUpdateTaskTest {
             final @Mocked Project project,
             final @Mocked ProgressIndicator indicator,
             final @Mocked RepositoryUpdater updater,
-            final @Mocked DvcsUtil dvcsUtil,
             final @Mocked NotificationUtil notificationUtil
     ) throws Exception {
         final String repoName = "test repo";
-        final GitExtenderSettings settings = new GitExtenderSettings();
+        final GitExtenderSettings settings = new GitExtenderSettings(true);
         final AtomicInteger countDown = new AtomicInteger(1);
         new Expectations() {{
             repo.getProject(); result = project;
@@ -39,7 +37,7 @@ public class BackgroundableRepoUpdateTaskTest {
 
         new Verifications() {{
             updater.updateRepository();
-            DvcsUtil.workingTreeChangeFinished(project, token);
+            token.finish();
             NotificationUtil.showInfoNotification("Update Completed", "Git Extender updated all projects");
         }};
     }
@@ -51,11 +49,10 @@ public class BackgroundableRepoUpdateTaskTest {
             final @Mocked Project project,
             final @Mocked ProgressIndicator indicator,
             final @Mocked RepositoryUpdater updater,
-            final @Mocked DvcsUtil dvcsUtil,
             final @Mocked NotificationUtil notificationUtil
     ) throws Exception {
         final String repoName = "test repo";
-        final GitExtenderSettings settings = new GitExtenderSettings();
+        final GitExtenderSettings settings = new GitExtenderSettings(true);
         final AtomicInteger countDown = new AtomicInteger(2);
         new Expectations() {{
             repo.getProject(); result = project;
@@ -68,7 +65,7 @@ public class BackgroundableRepoUpdateTaskTest {
         new Verifications() {{
             updater.updateRepository();
 
-            DvcsUtil.workingTreeChangeFinished(project, token); times = 0;
+            token.finish(); times = 0;
             NotificationUtil.showInfoNotification("Update Completed", "Git Extender updated all projects"); times = 0;
         }};
     }

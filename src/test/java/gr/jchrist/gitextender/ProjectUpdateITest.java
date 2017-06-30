@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowId;
@@ -16,6 +17,7 @@ import com.intellij.testFramework.TestDataProvider;
 import com.intellij.util.messages.MessageBusConnection;
 import git4idea.repo.GitRepository;
 import gr.jchrist.gitextender.configuration.GitExtenderSettings;
+import gr.jchrist.gitextender.configuration.GitExtenderSettingsHandler;
 import org.jetbrains.annotations.Nullable;
 import org.junit.After;
 import org.junit.Before;
@@ -29,13 +31,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
 
 import static gr.jchrist.gitextender.GitExecutor.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProjectUpdateTest {
-    private static final Logger logger = Logger.getLogger(ProjectUpdateTest.class.getName());
+public class ProjectUpdateITest {
+    private static final Logger logger = Logger.getInstance(ProjectUpdateITest.class);
 
     private static final String remoteName = "testRemote";
     private static final String remoteAccessName = "testRemoteAccess";
@@ -51,6 +52,7 @@ public class ProjectUpdateTest {
     private AnActionEvent event;
     private GitExtenderUpdateAll updater;
     private GitExtenderSettings settings;
+    private GitExtenderSettingsHandler appSettingsHandler;
 
     @Before
     public void before() throws Exception {
@@ -63,7 +65,6 @@ public class ProjectUpdateTest {
         base.getFilesToDelete().add(new File(remoteRepoAccessPath));
         base.getFilesToDelete().add(new File(base.getProjectPath()));
 
-        System.out.println("creating test remote in directory: " + remoteRepoPath+" with access (non-bare) in:"+remoteRepoAccessPath);
         logger.info("creating test remote in directory: " + remoteRepoPath+" with access (non-bare) in:"+remoteRepoAccessPath);
 
         repository = GitTestUtil.createRemoteRepositoryAndCloneToLocal(base.getProject(), base.getProjectPath(),
@@ -104,8 +105,9 @@ public class ProjectUpdateTest {
                 });
         mbc.subscribe(Notifications.TOPIC);
         logger.info("created message bus connection and subscribed to notifications:"+mbc);
-        settings = GitExtenderSettings.getInstance();
-        settings.attemptMergeAbort = false;
+        appSettingsHandler = new GitExtenderSettingsHandler();
+        settings = new GitExtenderSettings();
+        appSettingsHandler.saveSettings(settings);
     }
 
     @After
@@ -195,7 +197,8 @@ public class ProjectUpdateTest {
         base.getGitRepositoryManager().updateAllRepositories();
 
         //enable merge/abort
-        settings.attemptMergeAbort = true;
+        settings.setAttemptMergeAbort(true);
+        appSettingsHandler.saveSettings(settings);
 
         runUpdate();
 
@@ -232,7 +235,8 @@ public class ProjectUpdateTest {
         base.getGitRepositoryManager().updateAllRepositories();
 
         //enable merge/abort
-        settings.attemptMergeAbort = true;
+        settings.setAttemptMergeAbort(true);
+        appSettingsHandler.saveSettings(settings);
 
         runUpdate();
 
