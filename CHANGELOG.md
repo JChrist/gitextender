@@ -1,7 +1,7 @@
 Changelog
 ---------
 
-## 0.4.0 ()
+## 0.4.0 (2017-07-01)
 - For projects with multiple modules as separate Git roots, a dialog will open up, offering the option to select which module(s) to update. 
 - Refactored persisted configuration settings.
 
