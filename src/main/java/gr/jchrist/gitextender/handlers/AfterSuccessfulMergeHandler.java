@@ -64,12 +64,11 @@ public class AfterSuccessfulMergeHandler extends AfterMergeHandler {
                 new UpdatedFilesNotifier(mergeState.getUpdatedFiles())
                         .prepareNotificationWithUpdateInfo();
 
-        final UpdateInfoTree tree = generateUpdateInfoTree();
-
-        CommittedChangesCache.getInstance(mergeState.getProject())
-                .processUpdatedFiles(mergeState.getUpdatedFiles(), tree::setChangeLists);
-
         WaitForProgressToShow.runOrInvokeLaterAboveProgress(() -> {
+            final UpdateInfoTree tree = generateUpdateInfoTree();
+
+            CommittedChangesCache.getInstance(mergeState.getProject())
+                    .processUpdatedFiles(mergeState.getUpdatedFiles(), tree::setChangeLists);
             showUpdateTree(tree);
             VcsBalloonProblemNotifier.showOverChangesView(mergeState.getProject(),
                     "VCS Update Finished" + notificationWithUpdateInfo, MessageType.INFO);

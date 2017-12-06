@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>gr.jchrist.gitextender</id>
     <name>Git Extender</name>
-    <version>0.4.0</version>
+    <version>0.4.1</version>
     <vendor email="io.christod@gmail.com" url="https://github.com/JChrist/gitextender">JChrist</vendor>
 
     <description><![CDATA[
@@ -22,17 +22,14 @@
         However, when performing a diff for files in a branch other than the currently checked
         out, the diff will most probably be incorrect.<br/>
         This plugin is available under <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>
-        However, there are two special cases. The following people must pay
-        the <a href="https://github.com/JChrist">plugin author</a> a hefty 10€ price,
-        for each new version of the plugin that they download:
-        <ul>
-            <li><a href="https://github.com/gsaslis">Yorgos</a></li>
-            <li><a href="https://github.com/tdakanalis">Themistoklis</a></li>
-        </ul>
     ]]></description>
 
     <change-notes><![CDATA[
         <ul>
+            <li>
+                0.4.1:
+                Fix for issue #8: Create UpdateInfoTree from the event dispatch thread
+            </li>
             <li>
                 0.4.0:
                 For projects with multiple modules as separate Git roots, a dialog will open up,

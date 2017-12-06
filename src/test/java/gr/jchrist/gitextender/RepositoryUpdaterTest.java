@@ -3,8 +3,10 @@ package gr.jchrist.gitextender;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vfs.VirtualFile;
 import git4idea.GitUtil;
+import git4idea.GitVcs;
 import git4idea.commands.Git;
 import git4idea.repo.GitBranchTrackInfo;
 import git4idea.repo.GitRepository;
@@ -28,13 +30,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(JMockit.class)
 public class RepositoryUpdaterTest {
-    private final String repoName = "testRepo";
-    private final String initialBranch = "testInitialBranch";
     @Mocked GitRepository repo;
     @Mocked ProgressIndicator indicator;
     @Mocked NotificationUtil notificationUtil;
     @Mocked GitUtil gitUtil;
     @Mocked Git git;
+    @Mocked GitVcs gitVcs;
     @Mocked ServiceManager serviceManager;
     @Mocked Project project;
     @Mocked VirtualFile root;
@@ -43,8 +44,10 @@ public class RepositoryUpdaterTest {
     @Mocked BranchUpdater branchUpdater;
     @Mocked CheckoutHandler checkoutHandler;
 
-    private GitExtenderSettings settings;
-    private RepositoryUpdater repositoryUpdater;
+    String repoName = "testRepo";
+    String initialBranch = "testInitialBranch";
+    GitExtenderSettings settings;
+    RepositoryUpdater repositoryUpdater;
 
     @Before
     public void before() throws Exception {
@@ -124,7 +127,7 @@ public class RepositoryUpdaterTest {
     @Test
     public void noCurrentBranch() throws Exception {
         new Expectations() {{
-            repo.getRemotes().isEmpty(); result = false;
+            repo.getRemotes(); result = Collections.singletonList(null);
         }};
 
         repositoryUpdater.updateRepository();
@@ -138,10 +141,10 @@ public class RepositoryUpdaterTest {
     @Test
     public void errorDecidingWhetherToStash() throws Exception {
         new Expectations() {{
-            repo.getRemotes().isEmpty(); result = false;
+            repo.getRemotes(); result = Collections.singletonList(null);
             repo.getCurrentBranchName(); result = "test";
             GitUtil.hasLocalChanges(anyBoolean, repo.getProject(), repo.getRoot());
-            result = new Exception("test exception while checking whether there are changed files");
+            result = new TestVcsException("test exception while checking whether there are changed files");
         }};
 
         repositoryUpdater.updateRepository();
@@ -155,7 +158,7 @@ public class RepositoryUpdaterTest {
     @Test
     public void errorStashing() throws Exception {
         new Expectations() {{
-            repo.getRemotes().isEmpty(); result = false;
+            repo.getRemotes(); result = Collections.singletonList(null);
             repo.getCurrentBranchName(); result = "test";
             GitUtil.hasLocalChanges(anyBoolean, repo.getProject(), repo.getRoot()); result = true;
             git.stashSave(repo, anyString); result = error;
@@ -172,7 +175,7 @@ public class RepositoryUpdaterTest {
     @Test
     public void fetchError() throws Exception {
         new Expectations() {{
-            repo.getRemotes().isEmpty(); result = false;
+            repo.getRemotes(); result = Collections.singletonList(null);
             repo.getCurrentBranchName(); result = initialBranch;
             fetcher.fetchRootsAndNotify((Collection<GitRepository>) any, null, true); result = false;
         }};
@@ -224,6 +227,7 @@ public class RepositoryUpdaterTest {
         }};
 
         repositoryUpdater.updateRepository();
+
         List<String> errors = new ArrayList<>();
         new Verifications() {{
             NotificationUtil.showErrorNotification(anyString, withCapture(errors));
@@ -392,5 +396,16 @@ public class RepositoryUpdaterTest {
         String error = errors.get(0);
         assertThat(error).as("unexpected error notification content")
                 .contains(repoName, local, remote, "Merge error:", "NOT aborted");
+    }
+
+    private static class TestVcsException extends VcsException {
+        public TestVcsException(String message) {
+            super(message);
+        }
+
+        @Override
+        public Throwable fillInStackTrace() {
+            return this;
+        }
     }
 }

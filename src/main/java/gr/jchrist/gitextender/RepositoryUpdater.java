@@ -1,6 +1,7 @@
 package gr.jchrist.gitextender;
 
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsException;
@@ -17,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collections;
 
 public class RepositoryUpdater {
+    private static final Logger logger = Logger.getInstance(RepositoryUpdater.class);
     public static final String REBASE_IN_PROGRESS = "Repository $repo cannot be updated, because there is a rebase in progress";
     public static final String NO_REMOTES = "Repository $repo cannot be updated, because there are no remotes";
     public static final String NO_CURRENT_BRANCH = "Git repo: $repo<br>" +
@@ -26,6 +28,9 @@ public class RepositoryUpdater {
     public static final String FAILED_HAS_CHANGES = "Git repo: $repo<br>" +
             "Error: Git Extender failed to update git repo, " +
             "because it could not identify if there were any staged/unstaged changes. " +
+            "The exception was: ";
+    public static final String EXCEPTION_DURING_UPDATE = "Git repo: $repo<br>" +
+            "Error: Git Extender failed to update git repo, due to an exception during update. " +
             "The exception was: ";
     private final GitRepository repo;
     private final ProgressIndicator indicator;
@@ -65,6 +70,7 @@ public class RepositoryUpdater {
 
         final String currBranch = repo.getCurrentBranchName();
         if (currBranch == null) {
+            logger.warn("no current branch in repository: " + repo);
             NotificationUtil.showErrorNotification("Git Extender update failed",
                     getMessage(NO_CURRENT_BRANCH, repoName));
             return;
@@ -75,6 +81,7 @@ public class RepositoryUpdater {
         try {
             repoChanges = hasChanges(repo);
         } catch (Exception e) {
+            logger.warn("error trying to find if repo has changes: " + repo, e);
             NotificationUtil.showErrorNotification("Git Extender update failed",
                     getMessage(FAILED_HAS_CHANGES, repoName, e.getMessage()));
             return;
@@ -84,8 +91,10 @@ public class RepositoryUpdater {
             //there are changes that we need to stash
             GitCommandResult saveResult = git.stashSave(repo, "GitExtender_Stashing");
             if (!saveResult.success()) {
+                String errOut = saveResult.getErrorOutputAsJoinedString();
+                logger.warn("error trying to stash local repo changes: " + errOut);
                 NotificationUtil.showErrorNotification("Git Extender failed to stash changes",
-                        getMessage(NO_STASH, repoName, saveResult.getErrorOutputAsJoinedString()));
+                        getMessage(NO_STASH, repoName, errOut));
                 return;
             }
         }
@@ -94,7 +103,15 @@ public class RepositoryUpdater {
         // in such a situation, we must stop whatever we were doing ASAP, without making any other change whatsoever.
         boolean failureToAbort = false;
         try {
-
+            /*
+            //todo locking like this is invalid
+            logger.info("write-locking vcs for repo: " + repo + " from thread:" + Thread.currentThread().getName());
+            boolean locked = repo.getVcs().getCommandLock().writeLock().tryLock(0, TimeUnit.MILLISECONDS);
+            if (!locked) {
+                throw new Exception("could not lock repo " + repo +
+                        " for update from thread: " + Thread.currentThread().getName());
+            }
+            */
             //fetch and prune remote
             //git fetch origin
             final boolean fetchResult = new GitFetcher(project, indicator, true)
@@ -155,6 +172,9 @@ public class RepositoryUpdater {
                             return;
                         }
                     }
+                } else {
+                    //todo perhaps when we have a successful result we need to wait for the update info tree
+                    //generation to happen (invoked to happen through the dispatch thread) before moving on
                 }
             }
 
@@ -164,11 +184,29 @@ public class RepositoryUpdater {
 
             //update the repo after all updates, in order to re-sync locals / remotes and changed files
             repo.update();
+        }  catch (Exception e) {
+            logger.warn("exception trying to update repo: " + repo +
+                    " from thread:" + Thread.currentThread().getName(), e);
+            NotificationUtil.showErrorNotification("Git Extender update failed",
+                    getMessage(EXCEPTION_DURING_UPDATE, repoName, e.getMessage()));
         } finally {
             //now unstash, if we had stashed any changes
             if (repoChanges && !failureToAbort) {
-                git.stashPop(repo);
+                try {
+                    git.stashPop(repo);
+                } catch (Exception e) {
+                    logger.warn("error trying to pop stash for repo: " + repo, e);
+                }
             }
+            /*
+            //todo locking like this is invalid
+            logger.info("write-unlocking vcs for repo: " + repo);
+            try {
+                repo.getVcs().getCommandLock().writeLock().unlock();
+            } catch (Exception e) {
+                logger.warn("exception trying to unlock repo " + repo + " from thread:" +
+                        Thread.currentThread().getName(), e);
+            }*/
         }
     }
 

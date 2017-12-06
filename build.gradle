@@ -1,19 +1,21 @@
 buildscript {
     repositories {
-        maven { url 'http://dl.bintray.com/jetbrains/intellij-plugin-service' }
+        maven { url 'https://dl.bintray.com/jetbrains/intellij-plugin-service' }
     }
 }
 
 plugins {
-    id "org.jetbrains.intellij" version "0.2.13"
+    id "org.jetbrains.intellij" version "0.2.17"
 }
 
 intellij {
     type = 'IC'
+    version = "2017.3"
     updateSinceUntilBuild = false
     downloadSources = true
-    plugins 'git4idea' //comma separated list of plugins to depend on
-    pluginName 'gitextender'
+    //comma separated list of plugins to depend on
+    plugins = ['git4idea']
+    pluginName = 'gitextender'
 }
 
 publishPlugin {
@@ -24,7 +26,7 @@ publishPlugin {
 }
 
 group 'gr.jchrist'
-version '0.4.0'
+version '0.4.1'
 
 apply plugin: 'java'
 sourceCompatibility = '1.8'
@@ -35,7 +37,7 @@ repositories {
 }
 
 dependencies {
-    testCompile 'org.jmockit:jmockit:1.33'
+    testCompile 'org.jmockit:jmockit:1.35'
     testCompile 'junit:junit:4.12'
     testCompile 'org.assertj:assertj-core:3.8.0'
 }
@@ -43,8 +45,8 @@ dependencies {
 apply plugin: 'jacoco'
 jacocoTestReport {
     reports {
-        xml.enabled true
-        html.enabled false
+        xml.enabled = true
+        html.enabled = false
     }
 }
 
