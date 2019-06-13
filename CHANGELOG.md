@@ -1,6 +1,9 @@
 Changelog
 ---------
 
+## 0.5.0 (2019-06-13)
+* Added _prune local branches_ feature, so that a local branch gets deleted if it was tracking a remote one prior to fetching (and pruning) and its remote counter-part was pruned
+
 ## 0.4.1 (2017-12-06)
 - Fix issue #8: create UpdateInfoTree in the event dispatch thread 
 
