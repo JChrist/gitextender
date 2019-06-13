@@ -1,12 +1,14 @@
 package gr.jchrist.gitextender;
 
-import com.google.common.collect.Lists;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vfs.VirtualFile;
-import git4idea.*;
+import git4idea.GitLocalBranch;
+import git4idea.GitStandardRemoteBranch;
+import git4idea.GitUtil;
+import git4idea.GitVcs;
 import git4idea.commands.Git;
 import git4idea.repo.GitBranchTrackInfo;
 import git4idea.repo.GitRemote;
@@ -14,12 +16,12 @@ import git4idea.repo.GitRepository;
 import git4idea.update.GitFetcher;
 import gr.jchrist.gitextender.configuration.GitExtenderSettings;
 import gr.jchrist.gitextender.handlers.CheckoutHandler;
+import gr.jchrist.gitextender.handlers.DeleteHandler;
 import mockit.Delegate;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,9 +44,9 @@ public class RepositoryUpdaterTest {
     @Mocked Project project;
     @Mocked VirtualFile root;
     @Mocked GitFetcher fetcher;
-    // @Mocked GitBranchTrackInfo branchTrackInfo;
     @Mocked BranchUpdater branchUpdater;
     @Mocked CheckoutHandler checkoutHandler;
+    @Mocked DeleteHandler deleteHandler;
 
     GitRemote gr;
     GitBranchTrackInfo branchTrackInfo;
@@ -408,6 +410,53 @@ public class RepositoryUpdaterTest {
         String error = errors.get(0);
         assertThat(error).as("unexpected error notification content")
                 .contains(repoName, local, remote, "Merge error:", "NOT aborted");
+    }
+
+    @Test
+    public void testPruneLocalsNothingChanged() {
+        final Set<GitBranchTrackInfo> repoInfos = new HashSet<>(Arrays.asList(branchTrackInfo, branchTrackInfo2));
+        new Expectations() {{
+            repo.getBranchTrackInfos(); result = repoInfos;
+        }};
+
+        boolean result = repositoryUpdater.pruneLocals(git, repoInfos);
+        assertThat(result).as("expected repository updater to report nothing done for local pruning").isFalse();
+
+        new Verifications() {{
+            checkoutHandler.checkout(anyString); times = 0;
+            deleteHandler.delete(anyString); times = 0;
+        }};
+    }
+
+    @Test
+    public void testPruneLocalsOneRemoved() {
+        final Set<GitBranchTrackInfo> repoInfos = new HashSet<>(Arrays.asList(branchTrackInfo, branchTrackInfo2));
+        new Expectations() {{
+            repo.getBranchTrackInfos(); result = Collections.singleton(branchTrackInfo);
+            repo.getCurrentBranch(); result = branchTrackInfo.getLocalBranch();
+            deleteHandler.delete(branchTrackInfo2.getLocalBranch().getName()); times = 1; result = success;
+        }};
+
+        boolean result = repositoryUpdater.pruneLocals(git, repoInfos);
+        assertThat(result).as("expected repository updater to report successful local pruning").isTrue();
+
+        new Verifications() {{
+            checkoutHandler.checkout(anyString); times = 0;
+        }};
+    }
+
+    @Test
+    public void testPruneLocalsCurrentRemoved() {
+        final Set<GitBranchTrackInfo> repoInfos = new HashSet<>(Arrays.asList(branchTrackInfo, branchTrackInfo2));
+        new Expectations() {{
+            repo.getBranchTrackInfos(); result = Collections.singleton(branchTrackInfo);
+            repo.getCurrentBranch(); result = branchTrackInfo2.getLocalBranch();
+            checkoutHandler.checkout(branchTrackInfo.getLocalBranch().getName()); times = 1; result = success;
+            deleteHandler.delete(branchTrackInfo2.getLocalBranch().getName()); times = 1; result = success;
+        }};
+
+        boolean result = repositoryUpdater.pruneLocals(git, repoInfos);
+        assertThat(result).as("expected repository updater to report successful local pruning").isTrue();
     }
 
     private static class TestVcsException extends VcsException {

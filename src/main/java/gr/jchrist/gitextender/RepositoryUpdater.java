@@ -5,10 +5,8 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsException;
-import git4idea.GitBranch;
 import git4idea.GitLocalBranch;
 import git4idea.GitUtil;
-import git4idea.branch.GitBrancher;
 import git4idea.commands.Git;
 import git4idea.commands.GitCommandResult;
 import git4idea.repo.GitBranchTrackInfo;
@@ -238,7 +236,7 @@ public class RepositoryUpdater {
         return true;
     }
 
-    protected boolean pruneLocals(@NotNull Git git, @NotNull Set<GitBranchTrackInfo> preFetch) {
+    protected boolean pruneLocals(@NotNull Git git, @NotNull Collection<GitBranchTrackInfo> preFetch) {
         Collection<GitBranchTrackInfo> infos = repo.getBranchTrackInfos();
         if (preFetch.size() == infos.size()) {
             return false;
