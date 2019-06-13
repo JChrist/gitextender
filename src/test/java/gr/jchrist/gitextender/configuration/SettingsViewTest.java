@@ -24,6 +24,11 @@ public class SettingsViewTest {
         GitExtenderSettings settings = new GitExtenderSettings();
         assertThat(settings).isNotNull();
         settingsView = new SettingsView();
+        if (settingsView.isModified()) {
+            settingsView.apply();
+        }
+
+        assertThat(settingsView.isModified()).isFalse();
     }
 
     @After
@@ -62,9 +67,21 @@ public class SettingsViewTest {
     }
 
     @Test
+    public void testPruneLocalsIsModifiedApply() throws Exception {
+        assertThat(settingsView.getPruneLocals().isSelected()).isFalse();
+        assertThat(settingsView.isModified()).isFalse();
+        settingsView.getPruneLocals().setSelected(true);
+        assertThat(settingsView.isModified()).isTrue();
+        settingsView.apply();
+        assertThat(settingsView.isModified()).isFalse();
+        assertThat(settingsView.getPruneLocals().isSelected()).isTrue();
+    }
+
+    @Test
     public void testDisposeUIResources() throws Exception {
         settingsView.disposeUIResources();
         assertThat(settingsView.getMainPanel()).isNull();
         assertThat(settingsView.getAttemptMergeAbort()).isNull();
+        assertThat(settingsView.getPruneLocals()).isNull();
     }
 }
