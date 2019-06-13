@@ -8,12 +8,13 @@ import git4idea.commands.GitCommandResult;
 import git4idea.commands.GitLineHandler;
 import org.jetbrains.annotations.NotNull;
 
-public class CheckoutHandler {
+public class DeleteHandler {
+    public static final String DELETE_FLAG = "-D";
     private final Git git;
     private final Project project;
     private final VirtualFile root;
 
-    public CheckoutHandler(
+    public DeleteHandler(
             @NotNull Git git,
             @NotNull Project project,
             @NotNull VirtualFile root) {
@@ -23,10 +24,10 @@ public class CheckoutHandler {
     }
 
     @NotNull
-    public GitCommandResult checkout(String localBranchName) {
-        GitCommand checkout = GitCommand.CHECKOUT;
-        GitLineHandler checkoutHandler = new GitLineHandler(project, root, checkout);
-        checkoutHandler.addParameters(localBranchName);
-        return git.runCommand(checkoutHandler);
+    public GitCommandResult delete(String localBranchName) {
+        GitCommand checkout = GitCommand.BRANCH;
+        GitLineHandler deleteHandler = new GitLineHandler(project, root, checkout);
+        deleteHandler.addParameters(DELETE_FLAG, localBranchName);
+        return git.runCommand(deleteHandler);
     }
 }

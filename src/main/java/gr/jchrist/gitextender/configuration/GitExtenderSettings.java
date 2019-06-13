@@ -2,14 +2,16 @@ package gr.jchrist.gitextender.configuration;
 
 public class GitExtenderSettings {
     private boolean attemptMergeAbort;
+    private boolean pruneLocals;
 
     public GitExtenderSettings() {
-        this(false);
+        this(false, false);
 
     }
 
-    public GitExtenderSettings(boolean attemptMergeAbort) {
+    public GitExtenderSettings(boolean attemptMergeAbort, boolean pruneLocals) {
         this.attemptMergeAbort = attemptMergeAbort;
+        this.pruneLocals = pruneLocals;
     }
 
     public boolean getAttemptMergeAbort() {
@@ -20,6 +22,14 @@ public class GitExtenderSettings {
         this.attemptMergeAbort = attemptMergeAbort;
     }
 
+    public boolean getPruneLocals() {
+        return pruneLocals;
+    }
+
+    public void setPruneLocals(boolean pruneLocals) {
+        this.pruneLocals = pruneLocals;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -27,19 +37,19 @@ public class GitExtenderSettings {
 
         GitExtenderSettings settings = (GitExtenderSettings) o;
 
-        return attemptMergeAbort == settings.attemptMergeAbort;
+        return attemptMergeAbort == settings.attemptMergeAbort && pruneLocals == settings.pruneLocals;
     }
 
     @Override
     public int hashCode() {
-        return (attemptMergeAbort ? 1 : 0);
+        return (attemptMergeAbort ? 1 : 0) + (pruneLocals ? 10 : 0);
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("GitExtenderSettings{");
-        sb.append("attemptMergeAbort=").append(attemptMergeAbort);
-        sb.append('}');
-        return sb.toString();
+        return "GitExtenderSettings{" +
+                "attemptMergeAbort=" + attemptMergeAbort +
+                "pruneLocals=" + pruneLocals +
+                '}';
     }
 }

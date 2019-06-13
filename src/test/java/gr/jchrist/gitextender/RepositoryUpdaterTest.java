@@ -1,14 +1,15 @@
 package gr.jchrist.gitextender;
 
+import com.google.common.collect.Lists;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vfs.VirtualFile;
-import git4idea.GitUtil;
-import git4idea.GitVcs;
+import git4idea.*;
 import git4idea.commands.Git;
 import git4idea.repo.GitBranchTrackInfo;
+import git4idea.repo.GitRemote;
 import git4idea.repo.GitRepository;
 import git4idea.update.GitFetcher;
 import gr.jchrist.gitextender.configuration.GitExtenderSettings;
@@ -18,6 +19,7 @@ import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,9 +42,13 @@ public class RepositoryUpdaterTest {
     @Mocked Project project;
     @Mocked VirtualFile root;
     @Mocked GitFetcher fetcher;
-    @Mocked GitBranchTrackInfo branchTrackInfo;
+    // @Mocked GitBranchTrackInfo branchTrackInfo;
     @Mocked BranchUpdater branchUpdater;
     @Mocked CheckoutHandler checkoutHandler;
+
+    GitRemote gr;
+    GitBranchTrackInfo branchTrackInfo;
+    GitBranchTrackInfo branchTrackInfo2;
 
     String repoName = "testRepo";
     String initialBranch = "testInitialBranch";
@@ -52,6 +58,11 @@ public class RepositoryUpdaterTest {
     @Before
     public void before() throws Exception {
         settings = new GitExtenderSettings();
+        gr = new GitRemote("origin", Collections.singletonList("test remote"),
+                Collections.singleton("test push url"), Collections.singletonList("test fetch ref spec"),
+                Collections.singletonList("test push ref spec"));
+        branchTrackInfo = new GitBranchTrackInfo(new GitLocalBranch("test1"), new GitStandardRemoteBranch(gr, "test1"), false);
+        branchTrackInfo2 = new GitBranchTrackInfo(new GitLocalBranch("test2"), new GitStandardRemoteBranch(gr, "test2"), false);
         repositoryUpdater = new RepositoryUpdater(repo, indicator, repoName, settings);
     }
 
@@ -83,8 +94,8 @@ public class RepositoryUpdaterTest {
             new BranchUpdater(git, repo, repoName, branchTrackInfo, settings); result = branchUpdater;
             branchUpdater.update(); result = new BranchUpdateResult(success, success, null, null);
 
-            new CheckoutHandler(git, project, root, initialBranch); result = checkoutHandler;
-            checkoutHandler.checkout();
+            new CheckoutHandler(git, project, root); result = checkoutHandler;
+            checkoutHandler.checkout(initialBranch);
             repo.update();
             git.stashPop(repo);
         }};
@@ -220,8 +231,8 @@ public class RepositoryUpdaterTest {
             branchUpdater.getRemoteBranchName(); times = 0;
 
 
-            new CheckoutHandler(git, project, root, initialBranch); result = checkoutHandler;
-            checkoutHandler.checkout();
+            new CheckoutHandler(git, project, root); result = checkoutHandler;
+            checkoutHandler.checkout(initialBranch);
             repo.update();
             git.stashPop(repo);
         }};
@@ -274,8 +285,8 @@ public class RepositoryUpdaterTest {
             branchUpdater.getLocalBranchName(); result = local;
             branchUpdater.getRemoteBranchName(); result = remote;
 
-            new CheckoutHandler(git, project, root, initialBranch); result = checkoutHandler;
-            checkoutHandler.checkout();
+            new CheckoutHandler(git, project, root); result = checkoutHandler;
+            checkoutHandler.checkout(initialBranch);
             repo.update();
             git.stashPop(repo);
         }};
@@ -326,8 +337,8 @@ public class RepositoryUpdaterTest {
             branchUpdater.getLocalBranchName(); result = local;
             branchUpdater.getRemoteBranchName(); result = remote;
 
-            new CheckoutHandler(git, project, root, initialBranch); result = checkoutHandler;
-            checkoutHandler.checkout();
+            new CheckoutHandler(git, project, root); result = checkoutHandler;
+            checkoutHandler.checkout(initialBranch);
             repo.update();
             git.stashPop(repo);
         }};
@@ -346,11 +357,12 @@ public class RepositoryUpdaterTest {
     }
 
     @Test
-    public void MergeErrorNotAborted() throws Exception {
+    public void mergeErrorNotAborted() throws Exception {
         final String local = "local";
         final String remote = "remote";
         settings.setAttemptMergeAbort(true);
 
+        final List<GitBranchTrackInfo> repoInfos = Arrays.asList(branchTrackInfo, branchTrackInfo2);
         new Expectations() {{
             repo.isRebaseInProgress(); result = false;
             repo.getRemotes(); result = Collections.singletonList(null);
@@ -372,16 +384,16 @@ public class RepositoryUpdaterTest {
             };
 
             repo.update(); times = 1;
-            repo.getBranchTrackInfos(); result = Arrays.asList(branchTrackInfo, branchTrackInfo);
+            repo.getBranchTrackInfos(); result = repoInfos;
 
             new BranchUpdater(git, repo, repoName, branchTrackInfo, settings); result = branchUpdater;
             branchUpdater.update(); result = new BranchUpdateResult(success, error, error, error); times = 1;
             branchUpdater.getLocalBranchName(); result = local;
             branchUpdater.getRemoteBranchName(); result = remote;
 
-            new CheckoutHandler(git, project, root, initialBranch);
+            new CheckoutHandler(git, project, root);
             result = checkoutHandler; minTimes = 0;
-            checkoutHandler.checkout(); times = 0;
+            checkoutHandler.checkout(initialBranch); times = 0;
             git.stashPop(repo); times = 0;
         }};
 

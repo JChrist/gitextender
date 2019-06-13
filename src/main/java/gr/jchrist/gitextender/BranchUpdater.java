@@ -51,8 +51,8 @@ public class BranchUpdater {
 
     protected void checkout() {
         branchUpdateResult.checkoutResult =
-                new CheckoutHandler(git, repo.getProject(), repo.getRoot(), localBranchName)
-                        .checkout();
+                new CheckoutHandler(git, repo.getProject(), repo.getRoot())
+                        .checkout(localBranchName);
     }
 
     protected void merge() {

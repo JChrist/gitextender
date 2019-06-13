@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>gr.jchrist.gitextender</id>
     <name>Git Extender</name>
-    <version>0.4.1</version>
+    <version>0.5.0</version>
     <vendor email="io.christod@gmail.com" url="https://github.com/JChrist/gitextender">JChrist</vendor>
 
     <description><![CDATA[
@@ -26,6 +26,9 @@
 
     <change-notes><![CDATA[
         <ul>
+            <li>
+                0.5.0: Added an option for removing local branches that were tracking a remote one that was pruned
+            </li>
             <li>
                 0.4.1:
                 Fix for issue #8: Create UpdateInfoTree from the event dispatch thread

@@ -5,7 +5,10 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsException;
+import git4idea.GitBranch;
+import git4idea.GitLocalBranch;
 import git4idea.GitUtil;
+import git4idea.branch.GitBrancher;
 import git4idea.commands.Git;
 import git4idea.commands.GitCommandResult;
 import git4idea.repo.GitBranchTrackInfo;
@@ -13,9 +16,13 @@ import git4idea.repo.GitRepository;
 import git4idea.update.GitFetcher;
 import gr.jchrist.gitextender.configuration.GitExtenderSettings;
 import gr.jchrist.gitextender.handlers.CheckoutHandler;
+import gr.jchrist.gitextender.handlers.DeleteHandler;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class RepositoryUpdater {
     private static final Logger logger = Logger.getInstance(RepositoryUpdater.class);
@@ -112,6 +119,9 @@ public class RepositoryUpdater {
                         " for update from thread: " + Thread.currentThread().getName());
             }
             */
+            //mark here the branch track info prior to fetching/pruning
+            final Set<GitBranchTrackInfo> preInfos = new HashSet<>(repo.getBranchTrackInfos());
+
             //fetch and prune remote
             //git fetch origin
             final boolean fetchResult = new GitFetcher(project, indicator, true)
@@ -124,6 +134,10 @@ public class RepositoryUpdater {
 
             //update the repo after fetch, in order to re-sync locals and remotes
             repo.update();
+
+            if (settings.getPruneLocals()) {
+                pruneLocals(git, preInfos);
+            }
 
             for (final GitBranchTrackInfo info : repo.getBranchTrackInfos()) {
                 final BranchUpdater updater = new BranchUpdater(git, repo, repoName, info, settings);
@@ -178,9 +192,9 @@ public class RepositoryUpdater {
                 }
             }
 
-            CheckoutHandler checkoutHandler = new CheckoutHandler(git, project, repo.getRoot(), currBranch);
+            CheckoutHandler checkoutHandler = new CheckoutHandler(git, project, repo.getRoot());
             //now that we're finished, checkout again the branch that the developer had before
-            checkoutHandler.checkout();
+            checkoutHandler.checkout(currBranch);
 
             //update the repo after all updates, in order to re-sync locals / remotes and changed files
             repo.update();
@@ -219,6 +233,74 @@ public class RepositoryUpdater {
         if (repo.getRemotes().isEmpty()) {
             NotificationUtil.showErrorNotification("Repository cannot be updated", getMessage(NO_REMOTES, repoName));
             return false;
+        }
+
+        return true;
+    }
+
+    protected boolean pruneLocals(@NotNull Git git, @NotNull Set<GitBranchTrackInfo> preFetch) {
+        Collection<GitBranchTrackInfo> infos = repo.getBranchTrackInfos();
+        if (preFetch.size() == infos.size()) {
+            return false;
+        }
+
+        Set<GitBranchTrackInfo> afterFetch = new HashSet<>(infos);
+        Set<GitBranchTrackInfo> remainingLocals = new HashSet<>();
+        Set<GitBranchTrackInfo> markedForDeletion = new HashSet<>();
+
+        for (GitBranchTrackInfo pre : preFetch) {
+            boolean mark = true;
+            for (GitBranchTrackInfo after : afterFetch) {
+                if (pre.getLocalBranch().getName().equals(after.getLocalBranch().getName())) {
+                    mark = false;
+                    break;
+                }
+            }
+            if (mark) {
+                markedForDeletion.add(pre);
+            } else {
+                remainingLocals.add(pre);
+            }
+        }
+
+        if (remainingLocals.isEmpty()) {
+            //this is strange, if we proceeded to remove all remotely-pruned local branches, nothing would be left
+            logger.warn("not deleting local branches with pruned remotes, as no branches would be left in: " + repo);
+            return false;
+        }
+
+        if (markedForDeletion.isEmpty()) {
+            return false;
+        }
+
+        //check if the current branch is also marked for deletion, so as to switch to another (defaulting to master)
+        GitLocalBranch currentBranch = repo.getCurrentBranch();
+        markedForDeletion.stream().filter(ti -> ti.getLocalBranch().equals(currentBranch))
+                .findAny().ifPresent(ti -> {
+            //current branch is marked for deletion, so try to switch to master.
+            // if that fails, switch to the first possible local
+            CheckoutHandler checkoutHandler = new CheckoutHandler(git, repo.getProject(), repo.getRoot());
+            String branchToSwitchTo = null;
+            for (GitBranchTrackInfo localBranch : remainingLocals) {
+                if ("master".equals(localBranch.getLocalBranch().getName())) {
+                    //this is where we want to go
+                    branchToSwitchTo = "master";
+                    break;
+                }
+            }
+
+            if (branchToSwitchTo == null) {
+                //find the first local branch that is not marked for deletion, in order to switch to that
+                branchToSwitchTo = remainingLocals.iterator().next().getLocalBranch().getName();
+            }
+
+            checkoutHandler.checkout(branchToSwitchTo);
+        });
+
+        //now delete all marked local branches
+        DeleteHandler dh = new DeleteHandler(git, repo.getProject(), repo.getRoot());
+        for (GitBranchTrackInfo del : markedForDeletion) {
+            dh.delete(del.getLocalBranch().getName());
         }
 
         return true;

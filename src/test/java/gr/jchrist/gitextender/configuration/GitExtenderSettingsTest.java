@@ -40,18 +40,22 @@ public class GitExtenderSettingsTest {
         assertThat(settings.equals(settings2)).isTrue();
         assertThat(settings.equals(new Object())).isFalse();
         assertThat(settings.equals(new GitExtenderSettings())).isTrue();
-        assertThat(settings.equals(new GitExtenderSettings(true))).isFalse();
+        assertThat(settings.equals(new GitExtenderSettings(true, true))).isFalse();
     }
 
     @Test
     public void testHashcode() throws Exception {
         assertThat(new GitExtenderSettings().hashCode()).isZero();
-        assertThat(new GitExtenderSettings(true).hashCode()).isOne();
+        assertThat(new GitExtenderSettings(true, false).hashCode()).isOne();
+        assertThat(new GitExtenderSettings(false, true).hashCode()).isEqualTo(10);
+        assertThat(new GitExtenderSettings(true, true).hashCode()).isEqualTo(11);
     }
 
     @Test
     public void testToString() throws Exception {
-        assertThat(new GitExtenderSettings().toString()).contains("attemptMergeAbort=false");
-        assertThat(new GitExtenderSettings(true).toString()).contains("attemptMergeAbort=true");
+        assertThat(new GitExtenderSettings().toString()).contains("attemptMergeAbort=false").contains("pruneLocals=false");
+        assertThat(new GitExtenderSettings(true, false).toString()).contains("attemptMergeAbort=true").contains("pruneLocals=false");
+        assertThat(new GitExtenderSettings(false, true).toString()).contains("attemptMergeAbort=false").contains("pruneLocals=true");
+        assertThat(new GitExtenderSettings(true, true).toString()).contains("attemptMergeAbort=true").contains("pruneLocals=true");
     }
 }

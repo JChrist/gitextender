@@ -9,6 +9,7 @@ import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -16,23 +17,23 @@ import static gr.jchrist.gitextender.TestingUtil.success;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(JMockit.class)
-public class CheckoutHandlerTest {
+public class DeleteHandlerTest {
     private final String local = "local";
     @Mocked Git git;
     @Mocked Project project;
     @Mocked VirtualFile root;
 
     @Test
-    public void checkout(@Mocked final GitLineHandler checkout) throws Exception {
+    public void delete(@Mocked final GitLineHandler del) throws Exception {
         new Expectations() {{
-            new GitLineHandler(project, root, GitCommand.CHECKOUT); result = checkout;
-            git.runCommand(checkout); result = success;
+            new GitLineHandler(project, root, GitCommand.BRANCH); result = del;
+            git.runCommand(del); result = success;
         }};
-        CheckoutHandler handler = new CheckoutHandler(git, project, root);
-        assertThat(handler.checkout(local)).isSameAs(success);
+        DeleteHandler handler = new DeleteHandler(git, project, root);
+        assertThat(handler.delete(local)).isSameAs(success);
 
         new Verifications() {{
-            checkout.addParameters(local);
+            del.addParameters(DeleteHandler.DELETE_FLAG, local);
         }};
     }
 }

@@ -15,6 +15,7 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.impl.ToolWindowHeadlessManagerImpl;
 import com.intellij.testFramework.TestDataProvider;
 import com.intellij.util.messages.MessageBusConnection;
+import git4idea.branch.GitBranchesCollection;
 import git4idea.repo.GitRepository;
 import gr.jchrist.gitextender.configuration.GitExtenderSettings;
 import gr.jchrist.gitextender.configuration.GitExtenderSettingsHandler;
@@ -250,6 +251,47 @@ public class ProjectUpdateITest {
         assertThat(Paths.get(base.getProjectPath(), fileName))
                 .as("expected to abort merge, so local file should be as it was before merging")
                 .exists().hasBinaryContent(localContent.getBytes());
+    }
+
+    @Test
+    public void updateWithPrunedRemotesLocalDeleted() {
+        final String remoteFileName = "test_new_file.txt";
+        cd(remoteRepoAccessPath);
+        checkout("develop");
+        tac(remoteFileName);
+        push();
+
+        cd(base.getProjectPath());
+        checkout("develop");
+        git("pull");
+
+        base.getGitRepositoryManager().updateAllRepositories();
+
+        //now delete branch on remote
+        cd(remoteRepoAccessPath);
+        checkout("master");
+        git("branch -D develop");
+        //delete remote branch
+        git("push origin --delete develop");
+
+        //and get back to our local
+        cd(base.getProjectPath());
+
+        //enable merge/abort
+        settings.setAttemptMergeAbort(true);
+        settings.setPruneLocals(true);
+        appSettingsHandler.saveSettings(settings);
+
+        runUpdate();
+
+        assertNoErrors();
+
+        //this means that the pruned remote branch led us to delete the local one and switch to master
+        assertOnMasterBranch();
+        assertThat(base.getGitRepositoryManager().getRepositories()).hasSize(1);
+        GitBranchesCollection gbl = base.getGitRepositoryManager().getRepositories().get(0).getBranches();
+        assertThat(gbl.findLocalBranch("master")).as("no master branch found locally").isNotNull();
+        assertThat(gbl.findLocalBranch("develop")).as("develop branch found, while expected to have been auto-deleted").isNull();
     }
 
     private void runUpdate() {
