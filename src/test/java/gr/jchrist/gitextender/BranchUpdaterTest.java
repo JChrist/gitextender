@@ -58,7 +58,7 @@ public class BranchUpdaterTest {
         new Expectations() {{
             gitRepository.getProject(); result = project;
             gitRepository.getRoot(); result = virtualFile;
-            checkoutHandler.checkout(); result = success;
+            checkoutHandler.checkout(localBranchName); result = success;
             beforeMergeHandler.beforeMerge();
             ffMerger.mergeFastForward(); result = success;
             afterMergeHandler.afterMerge();
@@ -86,7 +86,7 @@ public class BranchUpdaterTest {
         new Expectations() {{
             gitRepository.getProject(); result = project;
             gitRepository.getRoot(); result = virtualFile;
-            checkoutHandler.checkout(); result = success;
+            checkoutHandler.checkout(localBranchName); result = success;
 
             beforeMergeHandler.beforeMerge();
 
@@ -116,7 +116,7 @@ public class BranchUpdaterTest {
         new Expectations() {{
             gitRepository.getProject(); result = project;
             gitRepository.getRoot(); result = virtualFile;
-            checkoutHandler.checkout(); result = error;
+            checkoutHandler.checkout(localBranchName); result = error;
         }};
 
         BranchUpdateResult bur = branchUpdater.update();
@@ -141,7 +141,7 @@ public class BranchUpdaterTest {
         new Expectations() {{
             gitRepository.getProject(); result = project;
             gitRepository.getRoot(); result = virtualFile;
-            checkoutHandler.checkout(); result = success;
+            checkoutHandler.checkout(localBranchName); result = success;
 
             beforeMergeHandler.beforeMerge();
 
@@ -178,7 +178,7 @@ public class BranchUpdaterTest {
         new Expectations() {{
             gitRepository.getProject(); result = project;
             gitRepository.getRoot(); result = virtualFile;
-            checkoutHandler.checkout(); result = success;
+            checkoutHandler.checkout(localBranchName); result = success;
 
             beforeMergeHandler.beforeMerge();
 

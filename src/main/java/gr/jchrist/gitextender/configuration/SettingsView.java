@@ -15,6 +15,7 @@ public class SettingsView implements SearchableConfigurable {
 
     private JPanel mainPanel;
     private JCheckBox attemptMergeAbort;
+    private JCheckBox pruneLocals;
 
     public SettingsView() {
         super();
@@ -64,16 +65,19 @@ public class SettingsView implements SearchableConfigurable {
     @Override
     public void reset() {
         attemptMergeAbort.setSelected(originalSavedSettings != null && originalSavedSettings.getAttemptMergeAbort());
+        pruneLocals.setSelected(originalSavedSettings != null && originalSavedSettings.getPruneLocals());
     }
 
     @Override
     public void disposeUIResources() {
         mainPanel = null;
         attemptMergeAbort = null;
+        pruneLocals = null;
     }
 
     protected GitExtenderSettings selected() {
-        return new GitExtenderSettings(attemptMergeAbort != null && attemptMergeAbort.isSelected());
+        return new GitExtenderSettings(attemptMergeAbort != null && attemptMergeAbort.isSelected(),
+                pruneLocals != null && pruneLocals.isSelected());
     }
 
     JPanel getMainPanel() {
@@ -82,5 +86,9 @@ public class SettingsView implements SearchableConfigurable {
 
     JCheckBox getAttemptMergeAbort() {
         return attemptMergeAbort;
+    }
+
+    JCheckBox getPruneLocals() {
+        return pruneLocals;
     }
 }

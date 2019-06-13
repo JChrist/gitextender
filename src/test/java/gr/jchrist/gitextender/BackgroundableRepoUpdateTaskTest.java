@@ -26,7 +26,7 @@ public class BackgroundableRepoUpdateTaskTest {
             final @Mocked NotificationUtil notificationUtil
     ) throws Exception {
         final String repoName = "test repo";
-        final GitExtenderSettings settings = new GitExtenderSettings(true);
+        final GitExtenderSettings settings = new GitExtenderSettings(true, true);
         final AtomicInteger countDown = new AtomicInteger(1);
         new Expectations() {{
             repo.getProject(); result = project;
@@ -52,7 +52,7 @@ public class BackgroundableRepoUpdateTaskTest {
             final @Mocked NotificationUtil notificationUtil
     ) throws Exception {
         final String repoName = "test repo";
-        final GitExtenderSettings settings = new GitExtenderSettings(true);
+        final GitExtenderSettings settings = new GitExtenderSettings(true, true);
         final AtomicInteger countDown = new AtomicInteger(2);
         new Expectations() {{
             repo.getProject(); result = project;

@@ -300,7 +300,7 @@ public class GitExecutor {
 
     @NotNull
     public static String push(String remoteName, String branch) {
-        return git("push -u " + remoteName+" "+branch);
+        return git("push -u " + remoteName + " " + branch);
     }
 
     @NotNull

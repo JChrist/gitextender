@@ -5,14 +5,18 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vfs.VirtualFile;
+import git4idea.GitLocalBranch;
+import git4idea.GitStandardRemoteBranch;
 import git4idea.GitUtil;
 import git4idea.GitVcs;
 import git4idea.commands.Git;
 import git4idea.repo.GitBranchTrackInfo;
+import git4idea.repo.GitRemote;
 import git4idea.repo.GitRepository;
 import git4idea.update.GitFetcher;
 import gr.jchrist.gitextender.configuration.GitExtenderSettings;
 import gr.jchrist.gitextender.handlers.CheckoutHandler;
+import gr.jchrist.gitextender.handlers.DeleteHandler;
 import mockit.Delegate;
 import mockit.Expectations;
 import mockit.Mocked;
@@ -40,9 +44,13 @@ public class RepositoryUpdaterTest {
     @Mocked Project project;
     @Mocked VirtualFile root;
     @Mocked GitFetcher fetcher;
-    @Mocked GitBranchTrackInfo branchTrackInfo;
     @Mocked BranchUpdater branchUpdater;
     @Mocked CheckoutHandler checkoutHandler;
+    @Mocked DeleteHandler deleteHandler;
+
+    GitRemote gr;
+    GitBranchTrackInfo branchTrackInfo;
+    GitBranchTrackInfo branchTrackInfo2;
 
     String repoName = "testRepo";
     String initialBranch = "testInitialBranch";
@@ -52,6 +60,11 @@ public class RepositoryUpdaterTest {
     @Before
     public void before() throws Exception {
         settings = new GitExtenderSettings();
+        gr = new GitRemote("origin", Collections.singletonList("test remote"),
+                Collections.singleton("test push url"), Collections.singletonList("test fetch ref spec"),
+                Collections.singletonList("test push ref spec"));
+        branchTrackInfo = new GitBranchTrackInfo(new GitLocalBranch("test1"), new GitStandardRemoteBranch(gr, "test1"), false);
+        branchTrackInfo2 = new GitBranchTrackInfo(new GitLocalBranch("test2"), new GitStandardRemoteBranch(gr, "test2"), false);
         repositoryUpdater = new RepositoryUpdater(repo, indicator, repoName, settings);
     }
 
@@ -83,8 +96,8 @@ public class RepositoryUpdaterTest {
             new BranchUpdater(git, repo, repoName, branchTrackInfo, settings); result = branchUpdater;
             branchUpdater.update(); result = new BranchUpdateResult(success, success, null, null);
 
-            new CheckoutHandler(git, project, root, initialBranch); result = checkoutHandler;
-            checkoutHandler.checkout();
+            new CheckoutHandler(git, project, root); result = checkoutHandler;
+            checkoutHandler.checkout(initialBranch);
             repo.update();
             git.stashPop(repo);
         }};
@@ -220,8 +233,8 @@ public class RepositoryUpdaterTest {
             branchUpdater.getRemoteBranchName(); times = 0;
 
 
-            new CheckoutHandler(git, project, root, initialBranch); result = checkoutHandler;
-            checkoutHandler.checkout();
+            new CheckoutHandler(git, project, root); result = checkoutHandler;
+            checkoutHandler.checkout(initialBranch);
             repo.update();
             git.stashPop(repo);
         }};
@@ -274,8 +287,8 @@ public class RepositoryUpdaterTest {
             branchUpdater.getLocalBranchName(); result = local;
             branchUpdater.getRemoteBranchName(); result = remote;
 
-            new CheckoutHandler(git, project, root, initialBranch); result = checkoutHandler;
-            checkoutHandler.checkout();
+            new CheckoutHandler(git, project, root); result = checkoutHandler;
+            checkoutHandler.checkout(initialBranch);
             repo.update();
             git.stashPop(repo);
         }};
@@ -326,8 +339,8 @@ public class RepositoryUpdaterTest {
             branchUpdater.getLocalBranchName(); result = local;
             branchUpdater.getRemoteBranchName(); result = remote;
 
-            new CheckoutHandler(git, project, root, initialBranch); result = checkoutHandler;
-            checkoutHandler.checkout();
+            new CheckoutHandler(git, project, root); result = checkoutHandler;
+            checkoutHandler.checkout(initialBranch);
             repo.update();
             git.stashPop(repo);
         }};
@@ -346,11 +359,12 @@ public class RepositoryUpdaterTest {
     }
 
     @Test
-    public void MergeErrorNotAborted() throws Exception {
+    public void mergeErrorNotAborted() throws Exception {
         final String local = "local";
         final String remote = "remote";
         settings.setAttemptMergeAbort(true);
 
+        final List<GitBranchTrackInfo> repoInfos = Arrays.asList(branchTrackInfo, branchTrackInfo2);
         new Expectations() {{
             repo.isRebaseInProgress(); result = false;
             repo.getRemotes(); result = Collections.singletonList(null);
@@ -372,16 +386,16 @@ public class RepositoryUpdaterTest {
             };
 
             repo.update(); times = 1;
-            repo.getBranchTrackInfos(); result = Arrays.asList(branchTrackInfo, branchTrackInfo);
+            repo.getBranchTrackInfos(); result = repoInfos;
 
             new BranchUpdater(git, repo, repoName, branchTrackInfo, settings); result = branchUpdater;
             branchUpdater.update(); result = new BranchUpdateResult(success, error, error, error); times = 1;
             branchUpdater.getLocalBranchName(); result = local;
             branchUpdater.getRemoteBranchName(); result = remote;
 
-            new CheckoutHandler(git, project, root, initialBranch);
+            new CheckoutHandler(git, project, root);
             result = checkoutHandler; minTimes = 0;
-            checkoutHandler.checkout(); times = 0;
+            checkoutHandler.checkout(initialBranch); times = 0;
             git.stashPop(repo); times = 0;
         }};
 
@@ -396,6 +410,53 @@ public class RepositoryUpdaterTest {
         String error = errors.get(0);
         assertThat(error).as("unexpected error notification content")
                 .contains(repoName, local, remote, "Merge error:", "NOT aborted");
+    }
+
+    @Test
+    public void testPruneLocalsNothingChanged() {
+        final Set<GitBranchTrackInfo> repoInfos = new HashSet<>(Arrays.asList(branchTrackInfo, branchTrackInfo2));
+        new Expectations() {{
+            repo.getBranchTrackInfos(); result = repoInfos;
+        }};
+
+        boolean result = repositoryUpdater.pruneLocals(git, repoInfos);
+        assertThat(result).as("expected repository updater to report nothing done for local pruning").isFalse();
+
+        new Verifications() {{
+            checkoutHandler.checkout(anyString); times = 0;
+            deleteHandler.delete(anyString); times = 0;
+        }};
+    }
+
+    @Test
+    public void testPruneLocalsOneRemoved() {
+        final Set<GitBranchTrackInfo> repoInfos = new HashSet<>(Arrays.asList(branchTrackInfo, branchTrackInfo2));
+        new Expectations() {{
+            repo.getBranchTrackInfos(); result = Collections.singleton(branchTrackInfo);
+            repo.getCurrentBranch(); result = branchTrackInfo.getLocalBranch();
+            deleteHandler.delete(branchTrackInfo2.getLocalBranch().getName()); times = 1; result = success;
+        }};
+
+        boolean result = repositoryUpdater.pruneLocals(git, repoInfos);
+        assertThat(result).as("expected repository updater to report successful local pruning").isTrue();
+
+        new Verifications() {{
+            checkoutHandler.checkout(anyString); times = 0;
+        }};
+    }
+
+    @Test
+    public void testPruneLocalsCurrentRemoved() {
+        final Set<GitBranchTrackInfo> repoInfos = new HashSet<>(Arrays.asList(branchTrackInfo, branchTrackInfo2));
+        new Expectations() {{
+            repo.getBranchTrackInfos(); result = Collections.singleton(branchTrackInfo);
+            repo.getCurrentBranch(); result = branchTrackInfo2.getLocalBranch();
+            checkoutHandler.checkout(branchTrackInfo.getLocalBranch().getName()); times = 1; result = success;
+            deleteHandler.delete(branchTrackInfo2.getLocalBranch().getName()); times = 1; result = success;
+        }};
+
+        boolean result = repositoryUpdater.pruneLocals(git, repoInfos);
+        assertThat(result).as("expected repository updater to report successful local pruning").isTrue();
     }
 
     private static class TestVcsException extends VcsException {
