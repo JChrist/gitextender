@@ -65,7 +65,7 @@ public class SettingsView implements SearchableConfigurable {
     @Override
     public void reset() {
         attemptMergeAbort.setSelected(originalSavedSettings != null && originalSavedSettings.getAttemptMergeAbort());
-        pruneLocals.setSelected(originalSavedSettings != null && originalSavedSettings.getAttemptMergeAbort());
+        pruneLocals.setSelected(originalSavedSettings != null && originalSavedSettings.getPruneLocals());
     }
 
     @Override
