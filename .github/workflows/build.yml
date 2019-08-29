@@ -14,5 +14,7 @@ jobs:
     - name: build
       run: ./gradlew check --stacktrace --info
     - name: code_coverage
-      run: bash <(curl -s https://codecov.io/bash)
+      run: bash <(curl -s https://codecov.io/bash) -C $GITHUB_SHA -B ${GITHUB_REF#refs/heads/} -Z
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       if: job.steps.build.status == success()
