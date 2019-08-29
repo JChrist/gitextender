@@ -1,6 +1,6 @@
 # Git Extender
 
-[![Build Status](https://travis-ci.org/JChrist/gitextender.svg?branch=master)](https://travis-ci.org/JChrist/gitextender)
+[![Workflow Status](https://shields-staging-pr-3913.herokuapp.com/github/actions/JChrist/gitextender/master)](https://shields-staging-pr-3913.herokuapp.com/github/actions/JChrist/gitextender/master)
 [![codecov](https://codecov.io/gh/JChrist/gitextender/branch/master/graph/badge.svg)](https://codecov.io/gh/JChrist/gitextender)
 
 Git Extender is a plugin for IntelliJ products, 
