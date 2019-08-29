@@ -122,6 +122,7 @@ public class RepositoryUpdater {
 
             //fetch and prune remote
             //git fetch origin
+            //TODO should be migrated to git4idea.fetch.GitFetchSupport;
             final boolean fetchResult = new GitFetcher(project, indicator, true)
                     .fetchRootsAndNotify(Collections.singleton(repo), null, true);
 
