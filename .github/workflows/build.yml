@@ -3,10 +3,11 @@ name: Java CI
 on: [push]
 
 jobs:
-  build:
+  citest:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - name: checkout
+      uses: actions/checkout@v1
     - name: setup_jdk
       uses: actions/setup-java@v1
       with:
@@ -17,4 +18,4 @@ jobs:
       run: bash <(curl -s https://codecov.io/bash) -C $GITHUB_SHA -B ${GITHUB_REF#refs/heads/} -Z
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      if: job.steps.build.status == success()
+
