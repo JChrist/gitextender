@@ -218,7 +218,18 @@ public class GitExecutor {
 
     //using inner class to avoid extra work during class loading of unrelated tests
     public static class PathHolder {
-        public static final String GIT_EXECUTABLE = "git";
+        private static String GIT_EXECUTABLE = null;
+        public static String getGitExecutable() {
+            if (GIT_EXECUTABLE != null) {
+                return GIT_EXECUTABLE;
+            }
+            if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+                GIT_EXECUTABLE = "git.exe";
+            } else {
+                GIT_EXECUTABLE = "git";
+            }
+            return GIT_EXECUTABLE;
+        }
     }
 
     public static String git(String command) {
@@ -233,7 +244,7 @@ public class GitExecutor {
     @NotNull
     private static String doCallGit(String command, boolean ignoreNonZeroExitCode) {
         List<String> split = splitCommandInParameters(command);
-        split.add(0, PathHolder.GIT_EXECUTABLE);
+        split.add(0, PathHolder.getGitExecutable());
         File workingDir = ourCurrentDir();
         debug("[" + workingDir.getName() + "] # git " + command);
         for (int attempt = 0; attempt < MAX_RETRIES; attempt++) {

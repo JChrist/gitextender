@@ -10,10 +10,11 @@ import git4idea.GitStandardRemoteBranch;
 import git4idea.GitUtil;
 import git4idea.GitVcs;
 import git4idea.commands.Git;
+import git4idea.fetch.GitFetchResult;
+import git4idea.fetch.GitFetchSupport;
 import git4idea.repo.GitBranchTrackInfo;
 import git4idea.repo.GitRemote;
 import git4idea.repo.GitRepository;
-import git4idea.update.GitFetcher;
 import gr.jchrist.gitextender.configuration.GitExtenderSettings;
 import gr.jchrist.gitextender.handlers.CheckoutHandler;
 import gr.jchrist.gitextender.handlers.DeleteHandler;
@@ -43,7 +44,8 @@ public class RepositoryUpdaterTest {
     @Mocked ServiceManager serviceManager;
     @Mocked Project project;
     @Mocked VirtualFile root;
-    @Mocked GitFetcher fetcher;
+    @Mocked GitFetchSupport fetcher;
+    @Mocked GitFetchResult gitFetchResult;
     @Mocked BranchUpdater branchUpdater;
     @Mocked CheckoutHandler checkoutHandler;
     @Mocked DeleteHandler deleteHandler;
@@ -65,7 +67,7 @@ public class RepositoryUpdaterTest {
                 Collections.singletonList("test push ref spec"));
         branchTrackInfo = new GitBranchTrackInfo(new GitLocalBranch("test1"), new GitStandardRemoteBranch(gr, "test1"), false);
         branchTrackInfo2 = new GitBranchTrackInfo(new GitLocalBranch("test2"), new GitStandardRemoteBranch(gr, "test2"), false);
-        repositoryUpdater = new RepositoryUpdater(repo, indicator, repoName, settings);
+        repositoryUpdater = new RepositoryUpdater(repo, repoName, settings);
     }
 
     @Test
@@ -77,18 +79,19 @@ public class RepositoryUpdaterTest {
             repo.getProject(); result = project;
             repo.getRoot(); result = root;
 
-            ServiceManager.getService(project, Git.class); result = git;
+            ServiceManager.getService(Git.class); result = git;
 
             GitUtil.hasLocalChanges(anyBoolean, project, root); result = true;
 
             git.stashSave(repo, anyString); result = success;
-            fetcher.fetchRootsAndNotify((Collection<GitRepository>) any, null, true);
-            result = new Delegate<Boolean>() {
-                public boolean fetchRootsAndNotify(Collection<GitRepository> repos, String title, boolean notify) {
+            fetcher.fetchAllRemotes((Collection<GitRepository>) any);
+            result = new Delegate<GitFetchResult>() {
+                public GitFetchResult fetchAllRemotes(Collection<GitRepository> repos) {
                     assertThat(repos).hasSize(1).containsExactly(repo);
-                    return true;
+                    return gitFetchResult;
                 }
             };
+            gitFetchResult.showNotification();
 
             repo.update();
             repo.getBranchTrackInfos(); result = Collections.singletonList(branchTrackInfo);
@@ -186,22 +189,6 @@ public class RepositoryUpdaterTest {
     }
 
     @Test
-    public void fetchError() throws Exception {
-        new Expectations() {{
-            repo.getRemotes(); result = Collections.singletonList(null);
-            repo.getCurrentBranchName(); result = initialBranch;
-            fetcher.fetchRootsAndNotify((Collection<GitRepository>) any, null, true); result = false;
-        }};
-
-        repositoryUpdater.updateRepository();
-
-        new Verifications() {{
-            repo.update(); times = 0;
-            NotificationUtil.showErrorNotification(anyString, anyString); times = 0;
-        }};
-    }
-
-    @Test
     public void checkoutError() throws Exception {
         final String local = "local";
         new Expectations() {{
@@ -211,18 +198,12 @@ public class RepositoryUpdaterTest {
             repo.getProject(); result = project;
             repo.getRoot(); result = root;
 
-            ServiceManager.getService(project, Git.class); result = git;
+            ServiceManager.getService(Git.class); result = git;
 
             GitUtil.hasLocalChanges(anyBoolean, project, root); result = true;
 
             git.stashSave(repo, anyString); result = success;
-            fetcher.fetchRootsAndNotify((Collection<GitRepository>) any, null, true);
-            result = new Delegate<Boolean>() {
-                public boolean fetchRootsAndNotify(Collection<GitRepository> repos, String title, boolean notify) {
-                    assertThat(repos).hasSize(1).containsExactly(repo);
-                    return true;
-                }
-            };
+            fetcher.fetchAllRemotes((Collection<GitRepository>) any); result = gitFetchResult;
 
             repo.update();
             repo.getBranchTrackInfos(); result = Collections.singletonList(branchTrackInfo);
@@ -266,18 +247,12 @@ public class RepositoryUpdaterTest {
             repo.getProject(); result = project;
             repo.getRoot(); result = root;
 
-            ServiceManager.getService(project, Git.class); result = git;
+            ServiceManager.getService(Git.class); result = git;
 
             GitUtil.hasLocalChanges(anyBoolean, project, root); result = true;
 
             git.stashSave(repo, anyString); result = success;
-            fetcher.fetchRootsAndNotify((Collection<GitRepository>) any, null, true);
-            result = new Delegate<Boolean>() {
-                public boolean fetchRootsAndNotify(Collection<GitRepository> repos, String title, boolean notify) {
-                    assertThat(repos).hasSize(1).containsExactly(repo);
-                    return true;
-                }
-            };
+            fetcher.fetchAllRemotes((Collection<GitRepository>) any); result = gitFetchResult;
 
             repo.update();
             repo.getBranchTrackInfos(); result = Collections.singletonList(branchTrackInfo);
@@ -318,18 +293,12 @@ public class RepositoryUpdaterTest {
             repo.getProject(); result = project;
             repo.getRoot(); result = root;
 
-            ServiceManager.getService(project, Git.class); result = git;
+            ServiceManager.getService(Git.class); result = git;
 
             GitUtil.hasLocalChanges(anyBoolean, project, root); result = true;
 
             git.stashSave(repo, anyString); result = success;
-            fetcher.fetchRootsAndNotify((Collection<GitRepository>) any, null, true);
-            result = new Delegate<Boolean>() {
-                public boolean fetchRootsAndNotify(Collection<GitRepository> repos, String title, boolean notify) {
-                    assertThat(repos).hasSize(1).containsExactly(repo);
-                    return true;
-                }
-            };
+            fetcher.fetchAllRemotes((Collection<GitRepository>) any); result = gitFetchResult;
 
             repo.update();
             repo.getBranchTrackInfos(); result = Collections.singletonList(branchTrackInfo);
@@ -372,18 +341,12 @@ public class RepositoryUpdaterTest {
             repo.getProject(); result = project;
             repo.getRoot(); result = root;
 
-            ServiceManager.getService(project, Git.class); result = git;
+            ServiceManager.getService(Git.class); result = git;
 
             GitUtil.hasLocalChanges(anyBoolean, project, root); result = true;
 
             git.stashSave(repo, anyString); result = success;
-            fetcher.fetchRootsAndNotify((Collection<GitRepository>) any, null, true);
-            result = new Delegate<Boolean>() {
-                public boolean fetchRootsAndNotify(Collection<GitRepository> repos, String title, boolean notify) {
-                    assertThat(repos).hasSize(1).containsExactly(repo);
-                    return true;
-                }
-            };
+            fetcher.fetchAllRemotes((Collection<GitRepository>) any); result = gitFetchResult;
 
             repo.update(); times = 1;
             repo.getBranchTrackInfos(); result = repoInfos;

@@ -27,6 +27,9 @@
     <change-notes><![CDATA[
         <ul>
             <li>
+                0.5.1: Updated threading model for updating repositories
+            </li>
+            <li>
                 0.5.0: Added an option for removing local branches that were tracking a remote one that was pruned
             </li>
             <li>

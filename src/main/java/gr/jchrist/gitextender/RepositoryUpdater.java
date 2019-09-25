@@ -2,16 +2,16 @@ package gr.jchrist.gitextender;
 
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsException;
 import git4idea.GitLocalBranch;
 import git4idea.GitUtil;
 import git4idea.commands.Git;
 import git4idea.commands.GitCommandResult;
+import git4idea.fetch.GitFetchResult;
+import git4idea.fetch.GitFetchSupport;
 import git4idea.repo.GitBranchTrackInfo;
 import git4idea.repo.GitRepository;
-import git4idea.update.GitFetcher;
 import gr.jchrist.gitextender.configuration.GitExtenderSettings;
 import gr.jchrist.gitextender.handlers.CheckoutHandler;
 import gr.jchrist.gitextender.handlers.DeleteHandler;
@@ -38,18 +38,15 @@ public class RepositoryUpdater {
             "Error: Git Extender failed to update git repo, due to an exception during update. " +
             "The exception was: ";
     private final GitRepository repo;
-    private final ProgressIndicator indicator;
     private final String repoName;
     private final GitExtenderSettings settings;
 
     public RepositoryUpdater(
             @NotNull GitRepository repo,
-            @NotNull ProgressIndicator indicator,
             @NotNull String repoName,
             @NotNull GitExtenderSettings settings
     ) {
         this.repo = repo;
-        this.indicator = indicator;
         this.repoName = repoName;
         this.settings = settings;
     }
@@ -71,7 +68,7 @@ public class RepositoryUpdater {
         final Project project = repo.getProject();
 
         //find git service
-        final Git git = ServiceManager.getService(project, Git.class);
+        final Git git = ServiceManager.getService(Git.class);
 
         final String currBranch = repo.getCurrentBranchName();
         if (currBranch == null) {
@@ -122,14 +119,9 @@ public class RepositoryUpdater {
 
             //fetch and prune remote
             //git fetch origin
-            //TODO should be migrated to git4idea.fetch.GitFetchSupport;
-            final boolean fetchResult = new GitFetcher(project, indicator, true)
-                    .fetchRootsAndNotify(Collections.singleton(repo), null, true);
-
-            if (!fetchResult) {
-                //git fetcher will have displayed the error
-                return;
-            }
+            GitFetchSupport gfs = GitFetchSupport.fetchSupport(project);
+            GitFetchResult gfr = gfs.fetchAllRemotes(Collections.singletonList(repo));
+            gfr.showNotification();
 
             //update the repo after fetch, in order to re-sync locals and remotes
             repo.update();

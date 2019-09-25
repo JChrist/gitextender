@@ -23,6 +23,8 @@ import org.jetbrains.annotations.Nullable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -32,11 +34,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static gr.jchrist.gitextender.GitExecutor.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProjectUpdateITest {
+@RunWith(JUnit4.class)
+public class ProjectUpdateITest extends AbstractIT {
     private static final Logger logger = Logger.getInstance(ProjectUpdateITest.class);
 
     private static final String remoteName = "testRemote";
@@ -45,7 +49,6 @@ public class ProjectUpdateITest {
     private String remoteRepoAccessPath;
     private GitRepository repository;
 
-    private TestingUtil.BaseIT base;
     private MessageBusConnection mbc;
     private final List<Notification> capturedInfos = new ArrayList<>();
     private final List<Notification> capturedErrors = new ArrayList<>();
@@ -56,38 +59,35 @@ public class ProjectUpdateITest {
     private GitExtenderSettingsHandler appSettingsHandler;
 
     @Before
-    public void before() throws Exception {
-        base = TestingUtil.getBaseIT();
-        base.setUp();
-
+    public final void before() throws Exception {
         remoteRepoPath = Files.createTempDirectory(remoteName).toRealPath(LinkOption.NOFOLLOW_LINKS).toString();
         remoteRepoAccessPath = Files.createTempDirectory(remoteAccessName).toRealPath(LinkOption.NOFOLLOW_LINKS).toString();
-        base.getFilesToDelete().add(new File(remoteRepoPath));
-        base.getFilesToDelete().add(new File(remoteRepoAccessPath));
-        base.getFilesToDelete().add(new File(base.getProjectPath()));
+        super.getFilesToDelete().add(new File(remoteRepoPath));
+        super.getFilesToDelete().add(new File(remoteRepoAccessPath));
+        super.getFilesToDelete().add(new File(super.getProjectPath()));
 
         logger.info("creating test remote in directory: " + remoteRepoPath+" with access (non-bare) in:"+remoteRepoAccessPath);
 
-        repository = GitTestUtil.createRemoteRepositoryAndCloneToLocal(base.getProject(), base.getProjectPath(),
+        repository = GitTestUtil.createRemoteRepositoryAndCloneToLocal(super.getProject(), super.getProjectPath(),
                 remoteRepoPath, remoteRepoAccessPath);
         repository.update();
-        base.getGitRepositoryManager().updateAllRepositories();
+        super.getGitRepositoryManager().updateAllRepositories();
 
-        logger.info("Starting up with repos: " + base.getGitRepositoryManager().getRepositories() +
-                " Branch track infos: "+ base.getGitRepositoryManager().getRepositories().get(0).getBranchTrackInfos());
+        logger.info("Starting up with repos: " + super.getGitRepositoryManager().getRepositories() +
+                " Branch track infos: "+ super.getGitRepositoryManager().getRepositories().get(0).getBranchTrackInfos());
 
         updater = new GitExtenderUpdateAll();
         event = AnActionEvent.createFromAnAction(updater, null, "somewhere",
-                new TestDataProvider(base.getProject()));
+                new TestDataProvider(super.getProject()));
 
-        //ToolWindowHeadlessManagerImpl tw = new ToolWindowHeadlessManagerImpl(base.getProject());
-        GitTestUtil.overrideService(base.getProject(), ToolWindowManager.class, ToolWindowHeadlessManagerImpl.class);
-        ToolWindowManager tw = ToolWindowManager.getInstance(base.getProject());
+        //ToolWindowHeadlessManagerImpl tw = new ToolWindowHeadlessManagerImpl(super.getProject());
+        GitTestUtil.overrideProjectComponent(super.getProject(), ToolWindowManager.class, ToolWindowHeadlessManagerImpl.class);
+        ToolWindowManager tw = ToolWindowManager.getInstance(super.getProject());
         tw.registerToolWindow(ToolWindowId.VCS, true, ToolWindowAnchor.BOTTOM);
 
-        assertThat(ToolWindowManager.getInstance(base.getProject()).getToolWindow(ToolWindowId.VCS)).isNotNull();
+        assertThat(ToolWindowManager.getInstance(super.getProject()).getToolWindow(ToolWindowId.VCS)).isNotNull();
 
-        logger.info("window is: "+ToolWindowManager.getInstance(base.getProject()).getToolWindow(ToolWindowId.VCS));
+        logger.info("window is: "+ToolWindowManager.getInstance(super.getProject()).getToolWindow(ToolWindowId.VCS));
 
         Application app = ApplicationManager.getApplication();
         logger.info("initialized app: "+app);
@@ -112,18 +112,17 @@ public class ProjectUpdateITest {
     }
 
     @After
-    public void after() throws Exception {
+    public final void after() throws Exception {
         if(mbc != null) {
             mbc.disconnect();
         }
-        base.tearDown();
     }
 
     @Test
     public void updateNoChanges() throws Exception {
         updater.actionPerformed(event);
         logger.info("update action performed");
-
+        waitForUpdateToFinish();
         assertNoErrors();
         assertOnMasterBranch();
     }
@@ -136,7 +135,7 @@ public class ProjectUpdateITest {
         tac(newFileName);
         push();
 
-        cd(base.getProjectPath());
+        cd(super.getProjectPath());
         checkout("master");
 
         runUpdate();
@@ -146,7 +145,7 @@ public class ProjectUpdateITest {
         assertOnMasterBranch();
 
         checkout("develop");
-        assertThat(Paths.get(base.getProjectPath(), newFileName)).exists();
+        assertThat(Paths.get(super.getProjectPath(), newFileName)).exists();
     }
 
     @Test
@@ -158,14 +157,14 @@ public class ProjectUpdateITest {
         tac(remoteFileName);
         push();
 
-        cd(base.getProjectPath());
+        cd(super.getProjectPath());
         checkout("develop");
         tac(localFileName);
         //not pushing this since it would get rejected (remote is 1 commit ahead)
         checkout("master");
 
         repository.update();
-        base.getGitRepositoryManager().updateAllRepositories();
+        super.getGitRepositoryManager().updateAllRepositories();
 
         runUpdate();
 
@@ -175,8 +174,8 @@ public class ProjectUpdateITest {
         assertOnMasterBranch();
 
         checkout("develop");
-        assertThat(Paths.get(base.getProjectPath(), localFileName)).exists();
-        assertThat(Paths.get(base.getProjectPath(), remoteFileName)).doesNotExist();
+        assertThat(Paths.get(super.getProjectPath(), localFileName)).exists();
+        assertThat(Paths.get(super.getProjectPath(), remoteFileName)).doesNotExist();
     }
 
     @Test
@@ -188,14 +187,14 @@ public class ProjectUpdateITest {
         tac(remoteFileName);
         push();
 
-        cd(base.getProjectPath());
+        cd(super.getProjectPath());
         checkout("develop");
         tac(localFileName);
         //not pushing this since it would get rejected (remote is 1 commit ahead)
         checkout("master");
 
         repository.update();
-        base.getGitRepositoryManager().updateAllRepositories();
+        super.getGitRepositoryManager().updateAllRepositories();
 
         //enable merge/abort
         settings.setAttemptMergeAbort(true);
@@ -210,8 +209,8 @@ public class ProjectUpdateITest {
         assertOnMasterBranch();
 
         checkout("develop");
-        assertThat(Paths.get(base.getProjectPath(), localFileName)).exists();
-        assertThat(Paths.get(base.getProjectPath(), remoteFileName)).exists();
+        assertThat(Paths.get(super.getProjectPath(), localFileName)).exists();
+        assertThat(Paths.get(super.getProjectPath(), remoteFileName)).exists();
     }
 
     @Test
@@ -226,14 +225,14 @@ public class ProjectUpdateITest {
         push();
 
         //and add the same file on our local develop (with different content from the remote)
-        cd(base.getProjectPath());
+        cd(super.getProjectPath());
         checkout("develop");
         tac(fileName, localContent);
         //not pushing this since it would get rejected (remote is 1 commit ahead)
         checkout("master");
 
         repository.update();
-        base.getGitRepositoryManager().updateAllRepositories();
+        super.getGitRepositoryManager().updateAllRepositories();
 
         //enable merge/abort
         settings.setAttemptMergeAbort(true);
@@ -248,7 +247,7 @@ public class ProjectUpdateITest {
         assertOnMasterBranch();
 
         checkout("develop");
-        assertThat(Paths.get(base.getProjectPath(), fileName))
+        assertThat(Paths.get(super.getProjectPath(), fileName))
                 .as("expected to abort merge, so local file should be as it was before merging")
                 .exists().hasBinaryContent(localContent.getBytes());
     }
@@ -261,11 +260,11 @@ public class ProjectUpdateITest {
         tac(remoteFileName);
         push();
 
-        cd(base.getProjectPath());
+        cd(super.getProjectPath());
         checkout("develop");
         git("pull");
 
-        base.getGitRepositoryManager().updateAllRepositories();
+        super.getGitRepositoryManager().updateAllRepositories();
 
         //now delete branch on remote
         cd(remoteRepoAccessPath);
@@ -275,7 +274,7 @@ public class ProjectUpdateITest {
         git("push origin --delete develop");
 
         //and get back to our local
-        cd(base.getProjectPath());
+        cd(super.getProjectPath());
 
         //enable merge/abort
         settings.setAttemptMergeAbort(true);
@@ -288,16 +287,16 @@ public class ProjectUpdateITest {
 
         //this means that the pruned remote branch led us to delete the local one and switch to master
         assertOnMasterBranch();
-        assertThat(base.getGitRepositoryManager().getRepositories()).hasSize(1);
-        GitBranchesCollection gbl = base.getGitRepositoryManager().getRepositories().get(0).getBranches();
+        assertThat(super.getGitRepositoryManager().getRepositories()).hasSize(1);
+        GitBranchesCollection gbl = super.getGitRepositoryManager().getRepositories().get(0).getBranches();
         assertThat(gbl.findLocalBranch("master")).as("no master branch found locally").isNotNull();
         assertThat(gbl.findLocalBranch("develop")).as("develop branch found, while expected to have been auto-deleted").isNull();
     }
 
     private void runUpdate() {
-        Boolean result = WriteCommandAction.runWriteCommandAction(base.getProject(),
+        Boolean result = WriteCommandAction.runWriteCommandAction(super.getProject(),
                 (Computable<Boolean>) ()-> {updater.actionPerformed(event); return true;});
-
+        waitForUpdateToFinish();
         logger.info("update action performed. result:"+result);
     }
 
@@ -359,5 +358,16 @@ public class ProjectUpdateITest {
         String branch = firstLineWords[firstLineWords.length-1];
         logger.info("current branch is:["+branch+"] as reported from (formatted) git status: "+result);
         return branch;
+    }
+
+    private void waitForUpdateToFinish() {
+        if (updater != null && updater.updateCountDown != null) {
+            try {
+                updater.updateCountDown.await(1, TimeUnit.MINUTES);
+            } catch (Exception ex) {
+                logger.warn("error waiting for update to finish! it took more than 1m!", ex);
+                fail("error waiting for update to finish! it took more than 1m!");
+            }
+        }
     }
 }

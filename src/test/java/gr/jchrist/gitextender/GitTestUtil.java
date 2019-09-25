@@ -107,12 +107,12 @@ public class GitTestUtil {
 
     @SuppressWarnings("unchecked")
     @NotNull
-    public static <T> T overrideService(@NotNull Project project, Class<? super T> serviceInterface, Class<T> serviceImplementation) {
+    public static <T> T overrideProjectComponent(@NotNull Project project, Class<? super T> serviceInterface, Class<T> serviceImplementation) {
         String key = serviceInterface.getName();
         MutablePicoContainer picoContainer = (MutablePicoContainer) project.getPicoContainer();
         picoContainer.unregisterComponent(key);
         picoContainer.registerComponentImplementation(key, serviceImplementation);
-        return (T) ServiceManager.getService(project, serviceInterface);
+        return (T) project.getComponent(serviceInterface);
     }
 
     @SuppressWarnings("unchecked")
