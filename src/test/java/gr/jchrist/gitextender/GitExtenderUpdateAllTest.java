@@ -1,7 +1,6 @@
 package gr.jchrist.gitextender;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.application.AccessToken;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.TestDataProvider;
@@ -26,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -57,7 +55,7 @@ public class GitExtenderUpdateAllTest extends BasePlatformTestCase {
             final @Mocked GitRepositoryManager grmanager
     ) throws Exception {
         new Expectations() {{
-            new GitRepositoryManager(project); result = new Exception("test error creating");
+            GitRepositoryManager.getInstance(project); result = new Exception("test error creating");
         }};
 
         assertThat(GitExtenderUpdateAll.getGitRepositoryManager(project)).isNull();
@@ -86,7 +84,6 @@ public class GitExtenderUpdateAllTest extends BasePlatformTestCase {
         final GitExtenderSettings settings = new GitExtenderSettings();
         new Expectations() {{
             gitRepositoryManager.getRepositories(); result = Collections.singletonList(gitRepository);
-            gitRepositoryManager.updateAllRepositories();
             gitRepository.getProject(); result = project;
             gitRepository.getRoot(); result = root;
             VcsImplUtil.getShortVcsRootName(project, root); result = repoName;
@@ -137,7 +134,6 @@ public class GitExtenderUpdateAllTest extends BasePlatformTestCase {
         new Expectations() {{
             gitRepositoryManager.getRepositories();
             result = Arrays.asList(gitRepository1, gitRepository2, gitRepository3);
-            gitRepositoryManager.updateAllRepositories();
             gitRepository1.getProject(); result = project;
             gitRepository2.getProject(); result = project;
             gitRepository3.getProject(); result = project;
@@ -201,7 +197,6 @@ public class GitExtenderUpdateAllTest extends BasePlatformTestCase {
         new Expectations() {{
             gitRepositoryManager.getRepositories();
             result = Arrays.asList(gitRepository1, gitRepository2, gitRepository3);
-            gitRepositoryManager.updateAllRepositories();
             gitRepository1.getProject(); result = project;
             gitRepository2.getProject(); result = project;
             gitRepository3.getProject(); result = project;

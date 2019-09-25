@@ -12,7 +12,7 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.EdtTestUtil;
-import com.intellij.testFramework.HeavyPlatformTestCase;
+import com.intellij.testFramework.PlatformTestCase;
 import com.intellij.testFramework.TestLoggerFactory;
 import com.intellij.util.ArrayUtil;
 import git4idea.DialogManager;
@@ -35,7 +35,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 @RunWith(JUnit4.class)
-public abstract class AbstractIT extends HeavyPlatformTestCase {
+public abstract class AbstractIT extends PlatformTestCase {
     protected File myTestRoot;
     protected VirtualFile myTestRootFile;
     protected VirtualFile myProjectRoot;
@@ -90,7 +90,6 @@ public abstract class AbstractIT extends HeavyPlatformTestCase {
     public final void tearDown() throws Exception {
         try {
             EdtTestUtil.runInEdtAndWait( () -> super.tearDown() );
-            //super.tearDown();
         } finally {
             if (myAssertionsInTestDetected) {
                 TestLoggerFactory.dumpLogToStdout(myTestStartedIndicator);

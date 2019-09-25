@@ -51,7 +51,6 @@ public class GitExtenderUpdateAll extends AnAction {
             }
 
             List<GitRepository> repositoryList = manager.getRepositories();
-            manager.updateAllRepositories();
             if (repositoryList.isEmpty()) {
                 logger.info("no git repositories in project");
                 NotificationUtil.showErrorNotification("Update Failed", "Git Extender could not find any repositories in the current project");
@@ -85,7 +84,7 @@ public class GitExtenderUpdateAll extends AnAction {
     @Nullable
     public static GitRepositoryManager getGitRepositoryManager(@NotNull Project project) {
         try {
-            return new GitRepositoryManager(project);
+            return GitRepositoryManager.getInstance(project);
         } catch (Exception e) {
             logger.warn("exception caught while trying to get git repository manager", e);
             return null;
