@@ -1,30 +1,32 @@
 package gr.jchrist.gitextender.configuration;
 
+import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import gr.jchrist.gitextender.TestingUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProjectSettingsHandlerTest {
+@RunWith(JUnit4.class)
+public class ProjectSettingsHandlerTest extends BasePlatformTestCase {
     ProjectSettingsHandler handler;
-    private TestingUtil.BaseTest base;
 
     @Before
-    public void setUp() throws Exception {
-        base = TestingUtil.getBaseTest();
-        base.setUp();
-        handler = new ProjectSettingsHandler(base.getProject());
+    public final void setUp() throws Exception {
+        super.setUp();
+        handler = new ProjectSettingsHandler(super.getProject());
         handler.clearSelectedModules();
     }
 
     @After
-    public void tearDown() throws Exception {
+    public final void tearDown() throws Exception {
         handler.clearSelectedModules();
-        base.tearDown();
+        super.tearDown();
     }
 
     @Test
@@ -68,7 +70,7 @@ public class ProjectSettingsHandlerTest {
     }
 
     @Test
-    public void getProject() throws Exception {
-        assertThat(handler.getProject()).isEqualTo(base.getProject());
+    public void testGetProject() throws Exception {
+        assertThat(handler.getProject()).isEqualTo(super.getProject());
     }
 }

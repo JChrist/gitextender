@@ -6,7 +6,6 @@ public class GitExtenderSettings {
 
     public GitExtenderSettings() {
         this(false, false);
-
     }
 
     public GitExtenderSettings(boolean attemptMergeAbort, boolean pruneLocals) {

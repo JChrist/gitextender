@@ -1,9 +1,12 @@
 package gr.jchrist.gitextender.configuration;
 
+import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import gr.jchrist.gitextender.TestingUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -11,18 +14,17 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author jchrist
  * @since 2017/01/14
  */
-public class GitExtenderSettingsTest {
-    private TestingUtil.BaseTest base;
+@RunWith(JUnit4.class)
+public class GitExtenderSettingsTest extends BasePlatformTestCase {
 
     @Before
-    public void before() throws Exception {
-        base = TestingUtil.getBaseTest();
-        base.setUp();
+    public final void before() throws Exception {
+        super.setUp();
     }
 
     @After
-    public void after() throws Exception {
-        base.tearDown();
+    public final void after() throws Exception {
+        super.tearDown();
     }
 
     @Test

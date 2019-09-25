@@ -20,6 +20,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -29,6 +31,7 @@ import java.util.stream.Collectors;
  */
 public class GitExtenderUpdateAll extends AnAction {
     private static final Logger logger = Logger.getInstance(GitExtenderUpdateAll.class);
+    protected CountDownLatch updateCountDown;
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
@@ -48,7 +51,6 @@ public class GitExtenderUpdateAll extends AnAction {
             }
 
             List<GitRepository> repositoryList = manager.getRepositories();
-            manager.updateAllRepositories();
             if (repositoryList.isEmpty()) {
                 logger.info("no git repositories in project");
                 NotificationUtil.showErrorNotification("Update Failed", "Git Extender could not find any repositories in the current project");
@@ -82,13 +84,7 @@ public class GitExtenderUpdateAll extends AnAction {
     @Nullable
     public static GitRepositoryManager getGitRepositoryManager(@NotNull Project project) {
         try {
-            VcsRepositoryManager vcsManager = project.getComponent(VcsRepositoryManager.class);
-            if (vcsManager == null) {
-                logger.warn("no vcs manager returned for project: " + project);
-                return null;
-            }
-
-            return new GitRepositoryManager(project, vcsManager);
+            return GitRepositoryManager.getInstance(project);
         } catch (Exception e) {
             logger.warn("exception caught while trying to get git repository manager", e);
             return null;
@@ -114,16 +110,30 @@ public class GitExtenderUpdateAll extends AnAction {
         //get an access token for changing the repositories
         final AccessToken accessToken = DvcsUtil.workingTreeChangeStarted(project);
 
-        final AtomicInteger countDown = new AtomicInteger(repositories.size());
-
         //get the settings to find out the selected options
         GitExtenderSettingsHandler settingsHandler = new GitExtenderSettingsHandler();
         final GitExtenderSettings settings = settingsHandler.loadSettings();
+        final CountDownLatch countDownLatch = new CountDownLatch(repositories.size());
+        this.updateCountDown = new CountDownLatch(1);
         repositories.forEach(repo ->
-                new BackgroundableRepoUpdateTask(repo,
+                new Thread(new BackgroundableRepoUpdateTask(repo,
                         VcsImplUtil.getShortVcsRootName(repo.getProject(), repo.getRoot()),
-                        settings, countDown, accessToken)
-                        .queue());
+                        settings, countDownLatch))
+                        .start());
+        new Thread(() -> this.updateFinished(countDownLatch, accessToken)).start();
+    }
+
+    protected void updateFinished(CountDownLatch updateLatch, AccessToken accessToken) {
+        try {
+            //10 minutes should be extreme enough to account for ALL updates
+            updateLatch.await(10, TimeUnit.MINUTES);
+        } catch (Exception e) {
+            logger.warn("error awaiting update latch!", e);
+        }
+        //the last task finished should clean up, release project changes and show info notification
+        accessToken.finish();
+        NotificationUtil.showInfoNotification("Update Completed", "Git Extender updated all projects");
+        this.updateCountDown.countDown();
     }
 
     protected static List<GitRepository> getSelectedGitRepos(List<GitRepository> repos, List<String> selectedModules) {
