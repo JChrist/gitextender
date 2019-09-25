@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -112,11 +113,11 @@ public class GitExtenderUpdateAllTest extends BasePlatformTestCase {
             final @Mocked VirtualFile root1,
             final @Mocked VirtualFile root2,
             final @Mocked VirtualFile root3,
-            final @Mocked BackgroundableRepoUpdateTask task,
             final @Mocked VcsImplUtil vcsImplUtil,
             final @Mocked SelectModuleDialog selectModuleDialog,
             final @Mocked ProjectSettingsHandler projectSettingsHandler,
-            final @Mocked GitExtenderSettingsHandler gitExtenderSettingsHandler
+            final @Mocked GitExtenderSettingsHandler gitExtenderSettingsHandler,
+            final @Mocked RepositoryUpdater repoUpdater
     ) throws Exception {
         assertThat(project)
                 .as("null project returned from base")
@@ -150,19 +151,14 @@ public class GitExtenderUpdateAllTest extends BasePlatformTestCase {
 
             gitExtenderSettingsHandler.loadSettings(); result = settings;
 
-            new BackgroundableRepoUpdateTask(gitRepository1, repoName1, settings, (CountDownLatch)any);
-            result = task;
-            new BackgroundableRepoUpdateTask(gitRepository2, repoName2, settings, (CountDownLatch)any);
-            result = task;
-            new BackgroundableRepoUpdateTask(gitRepository3, repoName3, settings, (CountDownLatch)any);
-            result = task;
+            new RepositoryUpdater(gitRepository1, repoName1, settings); result = repoUpdater;
+            new RepositoryUpdater(gitRepository2, repoName2, settings); result = repoUpdater;
+            new RepositoryUpdater(gitRepository3, repoName3, settings); result = repoUpdater;
         }};
 
         updater.actionPerformed(event);
-
-        new Verifications() {{
-            task.run(); times = 3;
-        }};
+        assertThat(updater.updateCountDown).isNotNull();
+        assertThat(updater.updateCountDown.await(10, TimeUnit.SECONDS)).isTrue();
     }
 
     @Test
@@ -174,12 +170,11 @@ public class GitExtenderUpdateAllTest extends BasePlatformTestCase {
             final @Mocked VirtualFile root1,
             final @Mocked VirtualFile root2,
             final @Mocked VirtualFile root3,
-            final @Mocked BackgroundableRepoUpdateTask task1,
-            final @Mocked BackgroundableRepoUpdateTask task2,
             final @Mocked VcsImplUtil vcsImplUtil,
             final @Mocked SelectModuleDialog selectModuleDialog,
             final @Mocked ProjectSettingsHandler projectSettingsHandler,
-            final @Mocked GitExtenderSettingsHandler gitExtenderSettingsHandler
+            final @Mocked GitExtenderSettingsHandler gitExtenderSettingsHandler,
+            final @Mocked RepositoryUpdater repoUpdater
     ) throws Exception {
         assertThat(project)
                 .as("null project returned from base")
@@ -213,20 +208,14 @@ public class GitExtenderUpdateAllTest extends BasePlatformTestCase {
 
             gitExtenderSettingsHandler.loadSettings(); result = settings;
 
-            new BackgroundableRepoUpdateTask(gitRepository1, repoName1, settings, (CountDownLatch)any);
-            result = task1;
-            new BackgroundableRepoUpdateTask(gitRepository2, repoName2, settings, (CountDownLatch)any);
-            result = task2;
-            new BackgroundableRepoUpdateTask(gitRepository3, repoName3, settings, (CountDownLatch)any);
-            times = 0;
+            new RepositoryUpdater(gitRepository1, repoName1, settings); result = repoUpdater;
+            new RepositoryUpdater(gitRepository2, repoName2, settings); result = repoUpdater;
+            new RepositoryUpdater(gitRepository3, repoName3, settings); times = 0;
         }};
 
         updater.actionPerformed(event);
-
-        new Verifications() {{
-            task1.run();
-            task2.run();
-        }};
+        assertThat(updater.updateCountDown).isNotNull();
+        assertThat(updater.updateCountDown.await(10, TimeUnit.SECONDS)).isTrue();
     }
 
     @Test
