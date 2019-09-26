@@ -28,7 +28,7 @@ publishPlugin {
 }
 
 group 'gr.jchrist'
-version '0.5.1'
+version '0.5.2'
 
 apply plugin: 'java'
 sourceCompatibility = '1.8'

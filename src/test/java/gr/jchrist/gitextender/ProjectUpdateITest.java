@@ -364,6 +364,11 @@ public class ProjectUpdateITest extends AbstractIT {
         if (updater != null && updater.updateCountDown != null) {
             try {
                 updater.updateCountDown.await(1, TimeUnit.MINUTES);
+                int retries = 0;
+                while (updater.executingFlag.get() && retries < 100) {
+                    TimeUnit.MILLISECONDS.sleep(100);
+                    retries++;
+                }
             } catch (Exception ex) {
                 logger.warn("error waiting for update to finish! it took more than 1m!", ex);
                 fail("error waiting for update to finish! it took more than 1m!");

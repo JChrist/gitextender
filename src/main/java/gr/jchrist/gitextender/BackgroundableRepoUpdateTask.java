@@ -1,6 +1,5 @@
 package gr.jchrist.gitextender;
 
-import com.intellij.openapi.application.AccessToken;
 import git4idea.repo.GitRepository;
 import gr.jchrist.gitextender.configuration.GitExtenderSettings;
 import org.jetbrains.annotations.NotNull;

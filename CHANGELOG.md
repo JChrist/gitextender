@@ -1,6 +1,9 @@
 Changelog
 ---------
 
+## 0.5.2 (2019-09-26)
+* Fixed missing backgroundable task spinning notification and disabled concurrent executions
+
 ## 0.5.1 (2019-09-25)
 * Updated threading model for updating repositories, (hopefully) closing issue #13
 * Refactored all tests to not use the hacky way of BaseTest with Inner platform test case, instead extending BasePlatformTestCase or AbstractIT (which in turn extends HeavyPlatformTestCase)
