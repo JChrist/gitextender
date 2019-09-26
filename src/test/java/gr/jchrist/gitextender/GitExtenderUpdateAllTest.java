@@ -1,5 +1,6 @@
 package gr.jchrist.gitextender;
 
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -67,11 +68,11 @@ public class GitExtenderUpdateAllTest extends BasePlatformTestCase {
             final @Mocked GitRepositoryManager gitRepositoryManager,
             final @Mocked GitRepository gitRepository,
             final @Mocked VirtualFile root,
-            final @Mocked BackgroundableRepoUpdateTask task,
             final @Mocked VcsImplUtil vcsImplUtil,
             final @Mocked SelectModuleDialog selectModuleDialog,
             final @Mocked ProjectSettingsHandler projectSettingsHandler,
-            final @Mocked GitExtenderSettingsHandler gitExtenderSettingsHandler
+            final @Mocked GitExtenderSettingsHandler gitExtenderSettingsHandler,
+            final @Mocked RepositoryUpdater repositoryUpdater
     ) throws Exception {
         assertThat(project)
                 .as("null project returned from base")
@@ -92,15 +93,15 @@ public class GitExtenderUpdateAllTest extends BasePlatformTestCase {
             projectSettingsHandler.loadSelectedModules(); result = new ArrayList<>();
             gitExtenderSettingsHandler.loadSettings(); result = settings;
 
-            new BackgroundableRepoUpdateTask(gitRepository, repoName, settings, (CountDownLatch)any);
-            result = task;
+            new RepositoryUpdater(gitRepository, repoName, settings); result = repositoryUpdater;
         }};
 
         updater.actionPerformed(event);
+        assertThat(updater.updateCountDown).isNotNull();
+        assertThat(updater.updateCountDown.await(1, TimeUnit.MINUTES)).isTrue();
 
         new Verifications() {{
             selectModuleDialog.showAndGet(); times = 0;
-            task.run(); times = 1;
         }};
     }
 
@@ -231,7 +232,7 @@ public class GitExtenderUpdateAllTest extends BasePlatformTestCase {
         updater.actionPerformed(event);
 
         new Verifications() {{
-            NotificationUtil.showErrorNotification("Update Failed", anyString);
+            NotificationUtil.showNotification("Update Failed", anyString, NotificationType.ERROR);
         }};
     }
 
@@ -269,7 +270,7 @@ public class GitExtenderUpdateAllTest extends BasePlatformTestCase {
         updater.actionPerformed(event);
 
         new Verifications() {{
-            NotificationUtil.showErrorNotification("Update Failed", anyString);
+            NotificationUtil.showNotification("Update Failed", anyString, NotificationType.ERROR);
         }};
     }
 
@@ -296,7 +297,7 @@ public class GitExtenderUpdateAllTest extends BasePlatformTestCase {
         updater.actionPerformed(event);
 
         new Verifications() {{
-            NotificationUtil.showInfoNotification("Update Canceled", anyString);
+            NotificationUtil.showNotification("Update Canceled", anyString, NotificationType.INFORMATION);
         }};
     }
 
@@ -323,7 +324,7 @@ public class GitExtenderUpdateAllTest extends BasePlatformTestCase {
         updater.actionPerformed(event);
 
         new Verifications() {{
-            NotificationUtil.showInfoNotification("Update Canceled", anyString);
+            NotificationUtil.showNotification("Update Canceled", anyString, NotificationType.INFORMATION);
         }};
     }
 }

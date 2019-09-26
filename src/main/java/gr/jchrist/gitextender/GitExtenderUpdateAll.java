@@ -1,13 +1,12 @@
 package gr.jchrist.gitextender;
 
 import com.intellij.dvcs.DvcsUtil;
-import com.intellij.dvcs.repo.VcsRepositoryManager;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.AccessToken;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.vcsUtil.VcsImplUtil;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
@@ -18,11 +17,9 @@ import gr.jchrist.gitextender.dialog.SelectModuleDialog;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
@@ -32,37 +29,38 @@ import java.util.stream.Collectors;
 public class GitExtenderUpdateAll extends AnAction {
     private static final Logger logger = Logger.getInstance(GitExtenderUpdateAll.class);
     protected CountDownLatch updateCountDown;
+    protected AtomicBoolean executingFlag = new AtomicBoolean(false);
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
+        if (!this.executingFlag.compareAndSet(false, true)) {
+            logger.warn("executing flag was true, another update action should be already running");
+            return;
+        }
         try {
             Project project = event.getProject();
             if (project == null) {
                 logger.warn("received event without project");
-                NotificationUtil.showErrorNotification("Update Failed", "Git Extender failed to retrieve the project");
-                return;
+                throw new CancelUpdateException("Update Failed", "Git Extender failed to retrieve the project");
             }
 
             GitRepositoryManager manager = getGitRepositoryManager(project);
 
             if (manager == null) {
-                NotificationUtil.showErrorNotification("Update Failed", "Git Extender could not initialize the project's repository manager");
-                return;
+                throw new CancelUpdateException("Update Failed", "Git Extender could not initialize the project's repository manager");
             }
 
             List<GitRepository> repositoryList = manager.getRepositories();
             if (repositoryList.isEmpty()) {
                 logger.info("no git repositories in project");
-                NotificationUtil.showErrorNotification("Update Failed", "Git Extender could not find any repositories in the current project");
-                return;
+                throw new CancelUpdateException("Update Failed", "Git Extender could not find any repositories in the current project");
             }
 
             ProjectSettingsHandler projectSettingsHandler = new ProjectSettingsHandler(project);
             boolean proceedToUpdate = showSelectModuleDialog(projectSettingsHandler, repositoryList);
-            if(!proceedToUpdate) {
+            if (!proceedToUpdate) {
                 logger.debug("update cancelled");
-                NotificationUtil.showInfoNotification("Update Canceled", "update was canceled");
-                return;
+                throw new CancelUpdateException("Update Canceled", "update was canceled", NotificationType.INFORMATION);
             }
 
             List<GitRepository> reposToUpdate = getSelectedGitRepos(repositoryList,
@@ -70,15 +68,25 @@ public class GitExtenderUpdateAll extends AnAction {
 
             if (reposToUpdate.isEmpty()) {
                 logger.debug("no modules selected in dialog");
-                NotificationUtil.showInfoNotification("Update Canceled", "update was canceled");
-                return;
+                throw new CancelUpdateException("Update Canceled", "Update was canceled due to no repositories selected", NotificationType.INFORMATION);
             }
 
             updateRepositories(project, reposToUpdate);
+        } catch (CancelUpdateException e) {
+            logger.debug("cancel update exception received", e);
+            NotificationUtil.showNotification(e.notificationTitle, e.notificationMessage, e.notificationType);
+            executingFlag.set(false);
         } catch (Exception | Error e) {
             logger.warn("error updating project due to exception", e);
             NotificationUtil.showErrorNotification("Update Failed", "Git Extender failed to update the project due to exception: " + e);
+            executingFlag.set(false);
         }
+    }
+
+    @Override
+    public void update(AnActionEvent anActionEvent) {
+        // Set the availability based on whether we are already executing or not
+        anActionEvent.getPresentation().setEnabled(!this.executingFlag.get());
     }
 
     @Nullable
@@ -113,27 +121,15 @@ public class GitExtenderUpdateAll extends AnAction {
         //get the settings to find out the selected options
         GitExtenderSettingsHandler settingsHandler = new GitExtenderSettingsHandler();
         final GitExtenderSettings settings = settingsHandler.loadSettings();
-        final CountDownLatch countDownLatch = new CountDownLatch(repositories.size());
-        this.updateCountDown = new CountDownLatch(1);
+        this.updateCountDown = new CountDownLatch(repositories.size());
         repositories.forEach(repo ->
                 new Thread(new BackgroundableRepoUpdateTask(repo,
                         VcsImplUtil.getShortVcsRootName(repo.getProject(), repo.getRoot()),
-                        settings, countDownLatch))
+                        settings, updateCountDown))
                         .start());
-        new Thread(() -> this.updateFinished(countDownLatch, accessToken)).start();
-    }
-
-    protected void updateFinished(CountDownLatch updateLatch, AccessToken accessToken) {
-        try {
-            //10 minutes should be extreme enough to account for ALL updates
-            updateLatch.await(10, TimeUnit.MINUTES);
-        } catch (Exception e) {
-            logger.warn("error awaiting update latch!", e);
-        }
-        //the last task finished should clean up, release project changes and show info notification
-        accessToken.finish();
-        NotificationUtil.showInfoNotification("Update Completed", "Git Extender updated all projects");
-        this.updateCountDown.countDown();
+        UpdateExecutingBackgroundTask ubt = new UpdateExecutingBackgroundTask(project, "GitExtender Update All Repos",
+                accessToken, updateCountDown, executingFlag);
+        new Thread(ubt::queue).start();
     }
 
     protected static List<GitRepository> getSelectedGitRepos(List<GitRepository> repos, List<String> selectedModules) {
@@ -148,5 +144,25 @@ public class GitExtenderUpdateAll extends AnAction {
 
     protected static String getRepoName(GitRepository repo) {
         return VcsImplUtil.getShortVcsRootName(repo.getProject(), repo.getRoot());
+    }
+
+    public static class CancelUpdateException extends Exception {
+        protected final String notificationTitle;
+        protected final String notificationMessage;
+        protected final NotificationType notificationType;
+
+        public CancelUpdateException(String notificationTitle, String notificationMessage) {
+            this(notificationTitle, notificationMessage, NotificationType.ERROR);
+        }
+
+        public CancelUpdateException(
+                String notificationTitle, String notificationMessage, NotificationType notificationType) {
+            super(notificationMessage);
+            this.notificationTitle = notificationTitle;
+            this.notificationMessage = notificationMessage;
+            this.notificationType = notificationType;
+        }
+
+        @Override public Throwable fillInStackTrace() { return this; }
     }
 }
