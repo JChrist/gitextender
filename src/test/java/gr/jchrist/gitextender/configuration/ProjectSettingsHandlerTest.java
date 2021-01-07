@@ -17,16 +17,14 @@ public class ProjectSettingsHandlerTest extends BasePlatformTestCase {
     ProjectSettingsHandler handler;
 
     @Before
-    public final void setUp() throws Exception {
-        super.setUp();
+    public final void testSetUp() throws Exception {
         handler = new ProjectSettingsHandler(super.getProject());
         handler.clearSelectedModules();
     }
 
     @After
-    public final void tearDown() throws Exception {
+    public final void testTearDown() throws Exception {
         handler.clearSelectedModules();
-        super.tearDown();
     }
 
     @Test

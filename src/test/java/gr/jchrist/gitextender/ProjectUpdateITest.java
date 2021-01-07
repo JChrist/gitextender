@@ -9,10 +9,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Computable;
-import com.intellij.openapi.wm.ToolWindowAnchor;
-import com.intellij.openapi.wm.ToolWindowId;
-import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.openapi.wm.impl.ToolWindowHeadlessManagerImpl;
 import com.intellij.testFramework.TestDataProvider;
 import com.intellij.util.messages.MessageBusConnection;
 import git4idea.branch.GitBranchesCollection;
@@ -26,7 +22,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Paths;
@@ -62,9 +57,6 @@ public class ProjectUpdateITest extends AbstractIT {
     public final void before() throws Exception {
         remoteRepoPath = Files.createTempDirectory(remoteName).toRealPath(LinkOption.NOFOLLOW_LINKS).toString();
         remoteRepoAccessPath = Files.createTempDirectory(remoteAccessName).toRealPath(LinkOption.NOFOLLOW_LINKS).toString();
-        super.getFilesToDelete().add(new File(remoteRepoPath));
-        super.getFilesToDelete().add(new File(remoteRepoAccessPath));
-        super.getFilesToDelete().add(new File(super.getProjectPath()));
 
         logger.info("creating test remote in directory: " + remoteRepoPath+" with access (non-bare) in:"+remoteRepoAccessPath);
 
@@ -79,15 +71,6 @@ public class ProjectUpdateITest extends AbstractIT {
         updater = new GitExtenderUpdateAll();
         event = AnActionEvent.createFromAnAction(updater, null, "somewhere",
                 new TestDataProvider(super.getProject()));
-
-        //ToolWindowHeadlessManagerImpl tw = new ToolWindowHeadlessManagerImpl(super.getProject());
-        GitTestUtil.overrideProjectComponent(super.getProject(), ToolWindowManager.class, ToolWindowHeadlessManagerImpl.class);
-        ToolWindowManager tw = ToolWindowManager.getInstance(super.getProject());
-        tw.registerToolWindow(ToolWindowId.VCS, true, ToolWindowAnchor.BOTTOM);
-
-        assertThat(ToolWindowManager.getInstance(super.getProject()).getToolWindow(ToolWindowId.VCS)).isNotNull();
-
-        logger.info("window is: "+ToolWindowManager.getInstance(super.getProject()).getToolWindow(ToolWindowId.VCS));
 
         Application app = ApplicationManager.getApplication();
         logger.info("initialized app: "+app);
@@ -116,13 +99,16 @@ public class ProjectUpdateITest extends AbstractIT {
         if(mbc != null) {
             mbc.disconnect();
         }
+        try {
+            repository.dispose();
+        } catch (Exception e) {
+            logger.warn("error disposing git repo");
+        }
     }
 
     @Test
     public void updateNoChanges() throws Exception {
-        updater.actionPerformed(event);
-        logger.info("update action performed");
-        waitForUpdateToFinish();
+        runUpdate();
         assertNoErrors();
         assertOnMasterBranch();
     }

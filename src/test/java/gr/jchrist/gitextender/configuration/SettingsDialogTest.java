@@ -15,19 +15,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @RunWith(JUnit4.class)
 public class SettingsDialogTest extends BasePlatformTestCase {
-    @Before
-    public final void before() throws Exception {
-        super.setUp();
-    }
-
-    @After
-    public final void after() throws Exception {
-        super.tearDown();
-    }
 
     @Test
-    public void testInit() throws Exception {
-        super.invokeTestRunnable(() -> {
+    public void testInit() throws Throwable {
+        super.runTestRunnable(() -> {
             SettingsDialog sd = new SettingsDialog(super.getProject());
             assertThat(sd).isNotNull();
             assertThat(sd.getSettingsView()).isNotNull();
@@ -36,8 +27,8 @@ public class SettingsDialogTest extends BasePlatformTestCase {
     }
 
     @Test
-    public void testValidation() throws Exception {
-        super.invokeTestRunnable(() -> {
+    public void testValidation() throws Throwable {
+        super.runTestRunnable(() -> {
             SettingsDialog sd = new SettingsDialog(super.getProject());
             assertThat(sd.doValidate()).isNull();
         });

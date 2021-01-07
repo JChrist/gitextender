@@ -1,6 +1,9 @@
 Changelog
 ---------
 
+## 0.6.0 (2020-12-29)
+* Fixed plugin menu integration
+
 ## 0.5.2 (2019-09-26)
 * Fixed missing backgroundable task spinning notification and disabled concurrent executions
 

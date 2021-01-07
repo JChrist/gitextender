@@ -129,6 +129,7 @@ public class GitExtenderUpdateAll extends AnAction {
                         .start());
         UpdateExecutingBackgroundTask ubt = new UpdateExecutingBackgroundTask(project, "GitExtender Update All Repos",
                 accessToken, updateCountDown, executingFlag);
+        //ubt.queue();
         new Thread(ubt::queue).start();
     }
 

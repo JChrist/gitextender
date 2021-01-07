@@ -18,29 +18,37 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class SelectModuleDialogTest extends BasePlatformTestCase {
     private ProjectSettingsHandler projectSettingsHandler;
     private List<String> testRepos = new ArrayList<>(Arrays.asList("repo1", "repo2", "repo3"));
+    private boolean init = false;
+    private boolean td = false;
 
     @Before
-    public final void before() throws Exception {
+    @Override
+    public final void setUp() throws Exception {
+        if (init) return;
+        init = true;
         super.setUp();
         projectSettingsHandler = new ProjectSettingsHandler(super.getProject());
     }
 
     @After
-    public final void after() throws Exception {
+    @Override
+    public final void tearDown() throws Exception {
+        if (td) return;
+        td = true;
         super.tearDown();
     }
 
     @Test
-    public void init() throws Exception {
-        super.invokeTestRunnable(() -> {
+    public void init() throws Throwable {
+        //super.runTestRunnable(() -> {
             SelectModuleDialog smd = new SelectModuleDialog(projectSettingsHandler, testRepos);
             assertThat(smd).isNotNull();
-        });
+        //});
     }
 
     @Test
-    public void selectAllNone() throws Exception {
-        super.invokeTestRunnable(() -> {
+    public void selectAllNone() throws Throwable {
+        //super.runTestRunnable(() -> {
             SelectModuleDialog smd = new SelectModuleDialog(projectSettingsHandler, testRepos);
             assertThat(smd).isNotNull();
             smd.selectAllBtn.doClick();
@@ -49,16 +57,16 @@ public class SelectModuleDialogTest extends BasePlatformTestCase {
             smd.selectNoneBtn.doClick();
             assertThat(smd.repoChooser.getMarkedElements()).isEmpty();
             assertThat(projectSettingsHandler.loadSelectedModules()).isEmpty();
-        });
+        //});
     }
 
     @Test
-    public void savedSelectedModules() throws Exception {
+    public void savedSelectedModules() throws Throwable {
         projectSettingsHandler.setSelectedModules(Arrays.asList(testRepos.get(0), "invalid module"));
-        super.invokeTestRunnable(() -> {
+        //super.runTestRunnable(() -> {
             SelectModuleDialog smd = new SelectModuleDialog(projectSettingsHandler, testRepos);
             assertThat(smd).isNotNull();
             assertThat(smd.repoChooser.getMarkedElements()).hasSize(1).contains(testRepos.get(0));
-        });
+        //});
     }
 }

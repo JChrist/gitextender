@@ -12,6 +12,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import git4idea.GitUtil;
 import git4idea.GitVcs;
 import git4idea.repo.GitRepository;
+import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.NotNull;
 import org.picocontainer.MutablePicoContainer;
 
@@ -65,14 +66,16 @@ public class GitTestUtil {
         vcsManager.setDirectoryMapping(root, GitVcs.NAME);
         VirtualFile file = LocalFileSystem.getInstance().findFileByIoFile(new File(root));
         assertThat(vcsManager.getAllVcsRoots().length).isNotZero();
-        GitRepository repository = GitUtil.getRepositoryManager(project).getRepositoryForRoot(file);
+        GitRepositoryManager grm = GitUtil.getRepositoryManager(project);
+
+        GitRepository repository = grm.getRepositoryForRoot(file);
         assertThat(repository).as("Couldn't find repository for root " + root).isNotNull();
         return repository;
     }
 
     public static void setupGitConfig() {
         git("config user.name 'JChrist'");
-        git("config user.email 'j@christ.gr'");
+        git("config user.email 'jchrist@jchrist.gr'");
         git("config push.default simple");
     }
 

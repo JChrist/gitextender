@@ -17,16 +17,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(JUnit4.class)
 public class GitExtenderSettingsTest extends BasePlatformTestCase {
 
-    @Before
-    public final void before() throws Exception {
-        super.setUp();
-    }
-
-    @After
-    public final void after() throws Exception {
-        super.tearDown();
-    }
-
     @Test
     public void testGetAttemptMergeAbort() throws Exception {
         GitExtenderSettings ges = new GitExtenderSettings();

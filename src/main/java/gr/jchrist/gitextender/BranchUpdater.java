@@ -90,10 +90,9 @@ public class BranchUpdater {
     }
 
     protected void prepareMerge() {
-        mergeState =
-                new BeforeMergeHandler(repo.getProject(), repo.getRoot(),
-                        repoName, localBranchName, remoteBranchName)
-                        .beforeMerge();
+        mergeState = new BeforeMergeHandler(repo.getProject(), repo.getRoot(), repo,
+                repoName, localBranchName, remoteBranchName)
+                .beforeMerge();
     }
 
     protected void afterMerge() {

@@ -7,11 +7,13 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.update.UpdatedFiles;
 import com.intellij.openapi.vfs.VirtualFile;
 import git4idea.GitRevisionNumber;
+import git4idea.repo.GitRepository;
 import org.jetbrains.annotations.NotNull;
 
 public class BeforeMergeHandler {
     private final Project project;
     private final VirtualFile root;
+    private final GitRepository repo;
     private final String repoName;
     private final String localBranchName;
     private final String remoteBranchName;
@@ -19,11 +21,13 @@ public class BeforeMergeHandler {
     public BeforeMergeHandler(
             @NotNull Project project,
             @NotNull VirtualFile root,
+            @NotNull GitRepository repo,
             @NotNull String repoName,
             @NotNull String localBranchName,
             @NotNull String remoteBranchName) {
         this.project = project;
         this.root = root;
+        this.repo = repo;
         this.repoName = repoName;
         this.localBranchName = localBranchName;
         this.remoteBranchName = remoteBranchName;
@@ -46,7 +50,7 @@ public class BeforeMergeHandler {
 
         //keep track of all updated files
         UpdatedFiles updatedFiles = UpdatedFiles.create();
-        return new MergeState(project, root, repoName, localBranchName, remoteBranchName,
+        return new MergeState(project, root, repo, repoName, localBranchName, remoteBranchName,
                 start, before, myLocalHistoryAction, updatedFiles);
     }
 

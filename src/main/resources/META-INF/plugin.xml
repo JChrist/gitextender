@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>gr.jchrist.gitextender</id>
     <name>Git Extender</name>
-    <version>0.5.2</version>
+    <version>0.6.0</version>
     <vendor email="io.christod@gmail.com" url="https://github.com/JChrist/gitextender">JChrist</vendor>
 
     <description><![CDATA[
@@ -9,7 +9,7 @@
         local branches tracking a remote for all git roots in the current project<br/>
         Local branches that will be updated are the branches that exist locally and have been configured
         to track a remote branch.<br/>
-        <p><strong>It requires IDE version 2016.3 or higher and Java 8</strong></p>
+        <p><strong>It requires IDE version 2020.3 or higher and Java 8+</strong></p>
         It tries to fast-forward commits in remote branches to local branches.
         It can be configured through the settings to attempt a simple merge,
         if the local branch cannot be merged to the tracked remote using fast-forward only.
@@ -26,6 +26,9 @@
 
     <change-notes><![CDATA[
         <ul>
+            <li>
+                0.6.0: Fixed plugin display in menu
+            </li>
             <li>
                 0.5.2: Fixed missing backgroundable task spinning notification and disabled concurrent executions
             </li>
@@ -72,7 +75,7 @@
     </change-notes>
 
     <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-    <idea-version since-build="192"/>
+    <idea-version since-build="203"/>
 
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.vcs</depends>
@@ -98,7 +101,7 @@
         <action id="GitExtender.UpdateAll" class="gr.jchrist.gitextender.GitExtenderUpdateAll"
                 text="Git Extender -&gt; Update All"
                 description="Update all locally tracked branches of all modules in the project">
-            <add-to-group group-id="Git.Menu" anchor="first"/>
+            <add-to-group group-id="Git.MainMenu" anchor="last" />
             <keyboard-shortcut keymap="$default" first-keystroke="alt T"/>
         </action>
     </actions>

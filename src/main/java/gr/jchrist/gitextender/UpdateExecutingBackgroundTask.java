@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class UpdateExecutingBackgroundTask extends Task.Backgroundable {
-    private static final Logger logger = Logger.getInstance(GitExtenderUpdateAll.class);
+    private static final Logger logger = Logger.getInstance(UpdateExecutingBackgroundTask.class);
     protected AccessToken accessToken;
     protected CountDownLatch updateCountDownLatch;
     protected AtomicBoolean executingFlag;
@@ -30,11 +30,13 @@ public class UpdateExecutingBackgroundTask extends Task.Backgroundable {
     @Override
     public void run(@NotNull ProgressIndicator indicator) {
         try {
+            logger.debug("waiting for update to finish - " + Thread.currentThread().getName());
             //10 minutes should be extreme enough to account for ALL updates
             updateCountDownLatch.await(10, TimeUnit.MINUTES);
         } catch (Exception e) {
             logger.warn("error awaiting update latch!", e);
         }
+        logger.debug("update finished - " + Thread.currentThread().getName());
         //the last task finished should clean up, release project changes and show info notification
         accessToken.finish();
         NotificationUtil.showInfoNotification("Update Completed", "Git Extender updated all projects");

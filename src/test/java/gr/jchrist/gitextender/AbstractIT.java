@@ -12,6 +12,7 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.EdtTestUtil;
+import com.intellij.testFramework.HeavyPlatformTestCase;
 import com.intellij.testFramework.PlatformTestCase;
 import com.intellij.testFramework.TestLoggerFactory;
 import com.intellij.util.ArrayUtil;
@@ -34,8 +35,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
-@RunWith(JUnit4.class)
-public abstract class AbstractIT extends PlatformTestCase {
+public abstract class AbstractIT extends HeavyPlatformTestCase {
     protected File myTestRoot;
     protected VirtualFile myTestRootFile;
     protected VirtualFile myProjectRoot;
@@ -52,12 +52,15 @@ public abstract class AbstractIT extends PlatformTestCase {
     @Rule
     public TestName testName = new TestName();
 
-    @Override
+    private boolean inited = false;
+    private boolean stopped = false;
+
     @Before
-    public final void setUp() throws Exception {
-        EdtTestUtil.runInEdtAndWait(() -> super.setUp());
+    public final void abstractSetUp() throws Exception {
+        //if (inited) return;
+        //inited = true;
+        //EdtTestUtil.runInEdtAndWait(() -> super.setUp());
         myTestRoot = new File(FileUtil.getTempDirectory(), "testRoot");
-        myFilesToDelete.add(myTestRoot);
         checkTestRootIsEmpty(myTestRoot);
 
         myTestRootFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(myTestRoot);
@@ -65,7 +68,6 @@ public abstract class AbstractIT extends PlatformTestCase {
 
         myTestStartedIndicator = enableDebugLogging();
 
-        // myProjectRoot = myProject.getBaseDir();
         myProjectPath = myProject.getBasePath();
 
         changeListManager = (ChangeListManagerImpl) ChangeListManager.getInstance(myProject);
@@ -85,20 +87,17 @@ public abstract class AbstractIT extends PlatformTestCase {
         removeSilently();
     }
 
-    @Override
     @After
-    public final void tearDown() throws Exception {
+    public final void abstractTearDown() throws Exception {
+        if (stopped) return;
+        stopped = true;
         try {
-            EdtTestUtil.runInEdtAndWait( () -> super.tearDown() );
+            //EdtTestUtil.runInEdtAndWait( () -> super.tearDown() );
         } finally {
-            if (myAssertionsInTestDetected) {
+            if (myAssertionsInTestDetected && myTestStartedIndicator != null) {
                 TestLoggerFactory.dumpLogToStdout(myTestStartedIndicator);
             }
         }
-    }
-
-    public Collection<File> getFilesToDelete() {
-        return myFilesToDelete;
     }
 
     /**
@@ -123,8 +122,14 @@ public abstract class AbstractIT extends PlatformTestCase {
 
     @Override
     public boolean runInDispatchThread() {
-        return false;
+        return true;
     }
+
+    /*@Override
+    protected boolean isRunInWriteAction() {
+        return true;
+    }
+    */
 
     @Override
     public String getName() {
