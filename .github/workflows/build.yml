@@ -11,7 +11,7 @@ jobs:
     - name: setup_jdk
       uses: actions/setup-java@v1
       with:
-        java-version: 1.8
+        java-version: 11
     - name: build
       run: ./gradlew check --stacktrace --info
     - name: code_coverage
