@@ -3,7 +3,6 @@ package gr.jchrist.gitextender;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vcs.VcsException;
 import git4idea.GitLocalBranch;
 import git4idea.GitUtil;
 import git4idea.commands.Git;
