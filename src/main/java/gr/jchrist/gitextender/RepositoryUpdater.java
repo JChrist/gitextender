@@ -297,7 +297,7 @@ public class RepositoryUpdater {
         return true;
     }
 
-    private boolean hasChanges(GitRepository repo) throws VcsException {
+    private boolean hasChanges(GitRepository repo) throws Exception {
         return GitUtil.hasLocalChanges(true, repo.getProject(), repo.getRoot()) ||
                 GitUtil.hasLocalChanges(false, repo.getProject(), repo.getRoot());
     }
