@@ -40,7 +40,7 @@ repositories {
 
 dependencies {
     testCompile 'org.mockito:mockito-core:2.+'
-    testCompile 'junit:junit:4.12'
+    testCompile 'junit:junit:4.13.1'
     testCompile 'org.assertj:assertj-core:3.18.1'
 //    testCompile 'com.jetbrains.intellij.platform:vcs-test-framework:192.5728.98'
 }
