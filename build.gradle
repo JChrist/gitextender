@@ -39,7 +39,7 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'org.mockito:mockito-core:2.+'
+    testImplementation 'org.mockito:mockito-core:3.+'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.assertj:assertj-core:3.19.0'
 }
