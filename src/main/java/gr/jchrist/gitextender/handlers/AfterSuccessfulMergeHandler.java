@@ -4,18 +4,14 @@ import com.intellij.history.Label;
 import com.intellij.history.LocalHistory;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.vcs.changes.VcsAnnotationRefresher;
-import com.intellij.openapi.vcs.changes.committed.CommittedChangesCache;
 import com.intellij.openapi.vcs.ex.ProjectLevelVcsManagerEx;
-import com.intellij.openapi.vcs.ui.VcsBalloonProblemNotifier;
 import com.intellij.openapi.vcs.update.ActionInfo;
 import com.intellij.openapi.vcs.update.RestoreUpdateTree;
 import com.intellij.openapi.vcs.update.UpdateFilesHelper;
 import com.intellij.openapi.vcs.update.UpdateInfoTree;
 import com.intellij.ui.GuiUtils;
 import com.intellij.ui.content.ContentManager;
-import com.intellij.util.WaitForProgressToShow;
 import com.intellij.vcs.ViewUpdateInfoNotification;
 import git4idea.merge.MergeChangeCollector;
 import org.jetbrains.annotations.NotNull;
@@ -33,7 +29,8 @@ public class AfterSuccessfulMergeHandler extends AfterMergeHandler {
         refreshFiles();
         mergeState.getLocalHistoryAction().finish();
 
-        showUpdatedFiles();
+        // TODO: disabling to work around issue https://github.com/JChrist/gitextender/issues/21
+        // showUpdatedFiles();
     }
 
     protected void gatherChanges() {
