@@ -1,7 +1,7 @@
 # Git Extender
 
 [![Actions Status](https://github.com/JChrist/gitextender/workflows/build/badge.svg)](https://github.com/JChrist/gitextender/actions)
-[![codecov](https://codecov.io/gh/JChrist/gitextender/branch/master/graph/badge.svg)](https://codecov.io/gh/JChrist/gitextender)
+[![codecov](https://codecov.io/gh/JChrist/gitextender/branch/main/graph/badge.svg)](https://codecov.io/gh/JChrist/gitextender)
 
 Git Extender is a plugin for IntelliJ products, 
 which allows updating all local branches of all modules in the current project.

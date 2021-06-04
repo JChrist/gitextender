@@ -33,7 +33,7 @@ public class GitTestUtil {
     public static GitRepository createRemoteRepositoryAndCloneToLocal(
             @NotNull Project project, @NotNull String root, @NotNull String remotePath, @NotNull String remoteAccessPath) {
         cd(remotePath);
-        git("init --bare");
+        git("init --bare --initial-branch=" + ProjectUpdateITest.MAIN_BRANCH_NAME);
         setupGitConfig();
 
         cloneRepo(remotePath, remoteAccessPath, false);
@@ -55,7 +55,7 @@ public class GitTestUtil {
         cd(root);
         setupGitConfig();
         checkout("develop");
-        checkout("master");
+        checkout("main");
 
         return repo;
     }

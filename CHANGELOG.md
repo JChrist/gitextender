@@ -1,6 +1,9 @@
 Changelog
 ---------
 
+## 0.7.0 (2021-06-04)
+* Workaround issue with wrong thread creating the update tree, by disabling showing update tree
+
 ## 0.6.0 (2020-12-29)
 * Fixed plugin menu integration
 

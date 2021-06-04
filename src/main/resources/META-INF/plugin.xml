@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>gr.jchrist.gitextender</id>
     <name>Git Extender</name>
-    <version>0.6.0</version>
+    <version>0.7.0</version>
     <vendor email="io.christod@gmail.com" url="https://github.com/JChrist/gitextender">JChrist</vendor>
 
     <description><![CDATA[
@@ -26,6 +26,9 @@
 
     <change-notes><![CDATA[
         <ul>
+            <li>
+                0.7.0: Workaround issue with wrong thread creating the update tree, by disabling showing update tree
+            </li>
             <li>
                 0.6.0: Fixed plugin display in menu
             </li>
