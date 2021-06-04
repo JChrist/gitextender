@@ -36,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(JUnit4.class)
 public class ProjectUpdateITest extends AbstractIT {
+    public static final String MAIN_BRANCH_NAME = "main";
     private static final Logger logger = Logger.getInstance(ProjectUpdateITest.class);
 
     private static final String remoteName = "testRemote";
@@ -110,7 +111,7 @@ public class ProjectUpdateITest extends AbstractIT {
     public void updateNoChanges() throws Exception {
         runUpdate();
         assertNoErrors();
-        assertOnMasterBranch();
+        assertOnMainBranch();
     }
 
     @Test
@@ -122,13 +123,13 @@ public class ProjectUpdateITest extends AbstractIT {
         push();
 
         cd(super.getProjectPath());
-        checkout("master");
+        checkout(MAIN_BRANCH_NAME);
 
         runUpdate();
 
         assertNoErrors();
 
-        assertOnMasterBranch();
+        assertOnMainBranch();
 
         checkout("develop");
         assertThat(Paths.get(super.getProjectPath(), newFileName)).exists();
@@ -147,7 +148,7 @@ public class ProjectUpdateITest extends AbstractIT {
         checkout("develop");
         tac(localFileName);
         //not pushing this since it would get rejected (remote is 1 commit ahead)
-        checkout("master");
+        checkout(MAIN_BRANCH_NAME);
 
         repository.update();
         super.getGitRepositoryManager().updateAllRepositories();
@@ -157,7 +158,7 @@ public class ProjectUpdateITest extends AbstractIT {
         assertError(Collections.singletonList("fast-forward only"),
                 Arrays.asList("Local branch: develop", "Remote branch: origin/develop"));
 
-        assertOnMasterBranch();
+        assertOnMainBranch();
 
         checkout("develop");
         assertThat(Paths.get(super.getProjectPath(), localFileName)).exists();
@@ -177,7 +178,7 @@ public class ProjectUpdateITest extends AbstractIT {
         checkout("develop");
         tac(localFileName);
         //not pushing this since it would get rejected (remote is 1 commit ahead)
-        checkout("master");
+        checkout(MAIN_BRANCH_NAME);
 
         repository.update();
         super.getGitRepositoryManager().updateAllRepositories();
@@ -192,7 +193,7 @@ public class ProjectUpdateITest extends AbstractIT {
         //assertError(Collections.singletonList("fast-forward only"),
         //        Arrays.asList("Local branch: develop", "Remote branch: origin/develop"));
 
-        assertOnMasterBranch();
+        assertOnMainBranch();
 
         checkout("develop");
         assertThat(Paths.get(super.getProjectPath(), localFileName)).exists();
@@ -215,7 +216,7 @@ public class ProjectUpdateITest extends AbstractIT {
         checkout("develop");
         tac(fileName, localContent);
         //not pushing this since it would get rejected (remote is 1 commit ahead)
-        checkout("master");
+        checkout(MAIN_BRANCH_NAME);
 
         repository.update();
         super.getGitRepositoryManager().updateAllRepositories();
@@ -230,7 +231,7 @@ public class ProjectUpdateITest extends AbstractIT {
                 Arrays.asList("Local branch: develop", "Remote branch: origin/develop", "Merge was aborted"),
                 Collections.singletonList("fast-forward"));
 
-        assertOnMasterBranch();
+        assertOnMainBranch();
 
         checkout("develop");
         assertThat(Paths.get(super.getProjectPath(), fileName))
@@ -254,7 +255,7 @@ public class ProjectUpdateITest extends AbstractIT {
 
         //now delete branch on remote
         cd(remoteRepoAccessPath);
-        checkout("master");
+        checkout(MAIN_BRANCH_NAME);
         git("branch -D develop");
         //delete remote branch
         git("push origin --delete develop");
@@ -271,11 +272,11 @@ public class ProjectUpdateITest extends AbstractIT {
 
         assertNoErrors();
 
-        //this means that the pruned remote branch led us to delete the local one and switch to master
-        assertOnMasterBranch();
+        //this means that the pruned remote branch led us to delete the local one and switch to main
+        assertOnMainBranch();
         assertThat(super.getGitRepositoryManager().getRepositories()).hasSize(1);
         GitBranchesCollection gbl = super.getGitRepositoryManager().getRepositories().get(0).getBranches();
-        assertThat(gbl.findLocalBranch("master")).as("no master branch found locally").isNotNull();
+        assertThat(gbl.findLocalBranch(MAIN_BRANCH_NAME)).as("no main branch found locally").isNotNull();
         assertThat(gbl.findLocalBranch("develop")).as("develop branch found, while expected to have been auto-deleted").isNull();
     }
 
@@ -326,18 +327,18 @@ public class ProjectUpdateITest extends AbstractIT {
         return null;
     }
 
-    private void assertOnMasterBranch() {
+    private void assertOnMainBranch() {
         assertThat(repository.getCurrentBranchName())
                 .as("we didn't get back to our original branch after updating")
-                .isEqualTo("master")
+                .isEqualTo("main")
                 .isEqualTo(getCurrentBranchFromGit());
     }
 
     private String getCurrentBranchFromGit() {
         String result = git("status");
         // expected result will be similar to:
-        // On branch master
-        // Your branch is up-to-date with 'origin/master'.
+        // On branch main
+        // Your branch is up-to-date with 'origin/main'.
         // nothing to commit, working tree clean
         result = result.replace("\n", "<br>");
         String[] firstLineWords = result.split("<br>")[0].split(" ");

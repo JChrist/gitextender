@@ -267,14 +267,15 @@ public class RepositoryUpdater {
         GitLocalBranch currentBranch = repo.getCurrentBranch();
         markedForDeletion.stream().filter(ti -> ti.getLocalBranch().equals(currentBranch))
                 .findAny().ifPresent(ti -> {
-            //current branch is marked for deletion, so try to switch to master.
+            //current branch is marked for deletion, so try to switch to main.
             // if that fails, switch to the first possible local
             CheckoutHandler checkoutHandler = new CheckoutHandler(git, repo.getProject(), repo.getRoot());
             String branchToSwitchTo = null;
             for (GitBranchTrackInfo localBranch : remainingLocals) {
-                if ("master".equals(localBranch.getLocalBranch().getName())) {
+                if ("master".equals(localBranch.getLocalBranch().getName()) ||
+                        "main".equals(localBranch.getLocalBranch().getName())) {
                     //this is where we want to go
-                    branchToSwitchTo = "master";
+                    branchToSwitchTo = localBranch.getLocalBranch().getName();
                     break;
                 }
             }
