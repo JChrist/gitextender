@@ -14,8 +14,6 @@ jobs:
         java-version: 11
     - name: build
       run: ./gradlew check --stacktrace --info
-    - name: code_coverage
-      run: bash <(curl -s https://codecov.io/bash) -C $GITHUB_SHA -B ${GITHUB_REF#refs/heads/} -Z
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
+    - uses: codecov/codecov-action@v2
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
