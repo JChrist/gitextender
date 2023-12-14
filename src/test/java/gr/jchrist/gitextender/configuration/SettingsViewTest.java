@@ -1,7 +1,6 @@
 package gr.jchrist.gitextender.configuration;
 
 import com.intellij.testFramework.LightPlatform4TestCase;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 

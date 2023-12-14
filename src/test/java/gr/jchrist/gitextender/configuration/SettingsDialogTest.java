@@ -1,8 +1,6 @@
 package gr.jchrist.gitextender.configuration;
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;

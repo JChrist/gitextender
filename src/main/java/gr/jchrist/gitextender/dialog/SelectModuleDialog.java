@@ -6,7 +6,10 @@ import gr.jchrist.gitextender.configuration.ProjectSettingsHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import java.util.List;
 
 public class SelectModuleDialog extends DialogWrapper {

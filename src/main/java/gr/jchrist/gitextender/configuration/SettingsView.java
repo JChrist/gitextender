@@ -6,7 +6,9 @@ import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 
 public class SettingsView implements SearchableConfigurable {
     public static final String DIALOG_TITLE = "GitExtender Settings";

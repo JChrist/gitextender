@@ -1,14 +1,7 @@
 package gr.jchrist.gitextender.configuration;
 
 import com.intellij.ide.util.PropertiesComponent;
-import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 public class GitExtenderSettingsHandler {
     static final String PREFIX = "gr.jchrist.gitextender.";

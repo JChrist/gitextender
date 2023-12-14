@@ -2,6 +2,7 @@ package gr.jchrist.gitextender.handlers;
 
 import com.intellij.history.Label;
 import com.intellij.history.LocalHistory;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vcs.changes.VcsAnnotationRefresher;
@@ -10,7 +11,6 @@ import com.intellij.openapi.vcs.update.ActionInfo;
 import com.intellij.openapi.vcs.update.RestoreUpdateTree;
 import com.intellij.openapi.vcs.update.UpdateFilesHelper;
 import com.intellij.openapi.vcs.update.UpdateInfoTree;
-import com.intellij.ui.GuiUtils;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.vcs.ViewUpdateInfoNotification;
 import git4idea.merge.MergeChangeCollector;
@@ -104,6 +104,6 @@ public class AfterSuccessfulMergeHandler extends AfterMergeHandler {
 
     protected void showUpdateTree(final UpdateInfoTree tree) {
         if (!mergeState.getProject().isOpen() || mergeState.getProject().isDisposed() || tree == null) return;
-        GuiUtils.invokeLaterIfNeeded(() -> ViewUpdateInfoNotification.focusUpdateInfoTree(mergeState.getProject(), tree), ModalityState.defaultModalityState());
+        ApplicationManager.getApplication().invokeLater(() -> ViewUpdateInfoNotification.focusUpdateInfoTree(mergeState.getProject(), tree), ModalityState.defaultModalityState());
     }
 }

@@ -6,14 +6,30 @@ jobs:
   citest:
     runs-on: ubuntu-latest
     steps:
+    # Free GitHub Actions Environment Disk Space
+    - name: Maximize Build Space
+      run: |
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /usr/local/lib/android
+        sudo rm -rf /opt/ghc
     - name: checkout
-      uses: actions/checkout@v1
-    - name: setup_jdk
-      uses: actions/setup-java@v1
+      uses: actions/checkout@v4
+    # Validate wrapper
+    - name: Gradle Wrapper Validation
+      uses: gradle/wrapper-validation-action@v1
+    - name: Setup Java
+      uses: actions/setup-java@v4
       with:
-        java-version: 11
+        distribution: corretto
+        java-version: 17
     - name: build
       run: ./gradlew check --stacktrace --info
-    - uses: codecov/codecov-action@v2
+    - uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
+    - name: Collect Tests Result
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: tests-result
+        path: ${{ github.workspace }}/build/reports/tests

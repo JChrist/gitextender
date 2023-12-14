@@ -5,7 +5,6 @@ import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class ProjectSettingsHandler {
@@ -22,22 +21,19 @@ public class ProjectSettingsHandler {
 
     @NotNull
     public List<String> loadSelectedModules() {
-        List<String> modules = new ArrayList<>();
-
-        String[] selectedModules = properties.getValues(SELECTED_MODULES_KEY);
-        if (selectedModules == null || selectedModules.length == 0) {
-            return modules;
+        List<String> selectedModules = properties.getList(SELECTED_MODULES_KEY);
+        if (selectedModules == null) {
+            return new ArrayList<>();
         }
 
-        modules.addAll(Arrays.asList(selectedModules));
-        return modules;
+        return new ArrayList<>(selectedModules);
     }
 
     public void addSelectedModule(@NotNull String module) {
         List<String> modules = loadSelectedModules();
         if (!modules.contains(module)) {
             modules.add(module);
-            properties.setValues(SELECTED_MODULES_KEY, modules.toArray(new String[modules.size()]));
+            properties.setList(SELECTED_MODULES_KEY, modules);
         }
     }
 
@@ -48,16 +44,17 @@ public class ProjectSettingsHandler {
             if (modules.isEmpty()) {
                 clearSelectedModules();
             } else {
-                properties.setValues(SELECTED_MODULES_KEY, modules.toArray(new String[modules.size()]));
+                properties.setList(SELECTED_MODULES_KEY, modules);
             }
         }
     }
 
     public void setSelectedModules(@NotNull List<String> modules) {
-        properties.setValues(SELECTED_MODULES_KEY, modules.toArray(new String[modules.size()]));
+        properties.setList(SELECTED_MODULES_KEY, new ArrayList<>(modules));
     }
 
     public void clearSelectedModules() {
+        properties.setList(SELECTED_MODULES_KEY, new ArrayList<>());
         properties.unsetValue(SELECTED_MODULES_KEY);
     }
 

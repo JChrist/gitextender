@@ -1,6 +1,6 @@
 package gr.jchrist.gitextender;
 
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import git4idea.GitLocalBranch;
@@ -67,7 +67,7 @@ public class RepositoryUpdater {
         final Project project = repo.getProject();
 
         //find git service
-        final Git git = ServiceManager.getService(Git.class);
+        final Git git = ApplicationManager.getApplication().getService(Git.class);
 
         final String currBranch = repo.getCurrentBranchName();
         if (currBranch == null) {

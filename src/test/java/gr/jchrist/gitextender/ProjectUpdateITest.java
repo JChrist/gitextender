@@ -31,7 +31,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static gr.jchrist.gitextender.GitExecutor.*;
+import static gr.jchrist.gitextender.GitExecutor.cd;
+import static gr.jchrist.gitextender.GitExecutor.checkout;
+import static gr.jchrist.gitextender.GitExecutor.git;
+import static gr.jchrist.gitextender.GitExecutor.push;
+import static gr.jchrist.gitextender.GitExecutor.tac;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(JUnit4.class)
@@ -61,17 +65,19 @@ public class ProjectUpdateITest extends AbstractIT {
 
         logger.info("creating test remote in directory: " + remoteRepoPath+" with access (non-bare) in:"+remoteRepoAccessPath);
 
-        repository = GitTestUtil.createRemoteRepositoryAndCloneToLocal(super.getProject(), super.getProjectPath(),
-                remoteRepoPath, remoteRepoAccessPath);
-        repository.update();
-        super.getGitRepositoryManager().updateAllRepositories();
+        repository = GitTestUtil.createRemoteRepositoryAndCloneToLocal(super.getProject(), super.getProjectPath(), remoteRepoPath, remoteRepoAccessPath);
+        final var grm = super.getGitRepositoryManager();
+        runOutOfEdt(() -> {
+            repository.update();
+            grm.updateAllRepositories();
+        });
 
-        logger.info("Starting up with repos: " + super.getGitRepositoryManager().getRepositories() +
-                " Branch track infos: "+ super.getGitRepositoryManager().getRepositories().get(0).getBranchTrackInfos());
+        logger.info("Starting up with repos: " + grm.getRepositories() +
+                " Branch track infos: "+ grm.getRepositories().get(0).getBranchTrackInfos());
 
         updater = new GitExtenderUpdateAll();
-        event = AnActionEvent.createFromAnAction(updater, null, "somewhere",
-                new TestDataProvider(super.getProject()));
+        final var tdp = new TestDataProvider(super.getProject());
+        event = AnActionEvent.createFromAnAction(updater, null, "somewhere", tdp::getData);
 
         Application app = ApplicationManager.getApplication();
         logger.info("initialized app: "+app);
@@ -150,8 +156,8 @@ public class ProjectUpdateITest extends AbstractIT {
         //not pushing this since it would get rejected (remote is 1 commit ahead)
         checkout(MAIN_BRANCH_NAME);
 
-        repository.update();
-        super.getGitRepositoryManager().updateAllRepositories();
+        final var grm = getGitRepositoryManager();
+        updateRepos(repository);
 
         runUpdate();
 
@@ -180,8 +186,7 @@ public class ProjectUpdateITest extends AbstractIT {
         //not pushing this since it would get rejected (remote is 1 commit ahead)
         checkout(MAIN_BRANCH_NAME);
 
-        repository.update();
-        super.getGitRepositoryManager().updateAllRepositories();
+        updateRepos(repository);
 
         //enable merge/abort
         settings.setAttemptMergeAbort(true);
@@ -218,8 +223,7 @@ public class ProjectUpdateITest extends AbstractIT {
         //not pushing this since it would get rejected (remote is 1 commit ahead)
         checkout(MAIN_BRANCH_NAME);
 
-        repository.update();
-        super.getGitRepositoryManager().updateAllRepositories();
+        updateRepos(repository);
 
         //enable merge/abort
         settings.setAttemptMergeAbort(true);
@@ -251,7 +255,7 @@ public class ProjectUpdateITest extends AbstractIT {
         checkout("develop");
         git("pull");
 
-        super.getGitRepositoryManager().updateAllRepositories();
+        updateRepos();
 
         //now delete branch on remote
         cd(remoteRepoAccessPath);
