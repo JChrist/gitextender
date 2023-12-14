@@ -5,7 +5,12 @@ import git4idea.commands.Git;
 import git4idea.repo.GitBranchTrackInfo;
 import git4idea.repo.GitRepository;
 import gr.jchrist.gitextender.configuration.GitExtenderSettings;
-import gr.jchrist.gitextender.handlers.*;
+import gr.jchrist.gitextender.handlers.AfterMergeHandler;
+import gr.jchrist.gitextender.handlers.BeforeMergeHandler;
+import gr.jchrist.gitextender.handlers.CheckoutHandler;
+import gr.jchrist.gitextender.handlers.FastForwardOnlyMerger;
+import gr.jchrist.gitextender.handlers.MergeState;
+import gr.jchrist.gitextender.handlers.SimpleMerger;
 import org.jetbrains.annotations.NotNull;
 
 /**

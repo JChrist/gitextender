@@ -3,7 +3,6 @@ package gr.jchrist.gitextender;
 import com.intellij.openapi.diagnostic.Logger;
 import git4idea.repo.GitRepository;
 import gr.jchrist.gitextender.configuration.GitExtenderSettings;
-import gr.jchrist.gitextender.handlers.AfterSuccessfulMergeHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CountDownLatch;

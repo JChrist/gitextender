@@ -2,8 +2,6 @@ package gr.jchrist.gitextender;
 
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.ProjectLevelVcsManager;
 import com.intellij.openapi.vcs.impl.ProjectLevelVcsManagerImpl;
@@ -14,16 +12,22 @@ import git4idea.GitVcs;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.NotNull;
-import org.picocontainer.MutablePicoContainer;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicReference;
 
-import static gr.jchrist.gitextender.GitExecutor.*;
+import static gr.jchrist.gitextender.GitExecutor.addCommit;
+import static gr.jchrist.gitextender.GitExecutor.append;
+import static gr.jchrist.gitextender.GitExecutor.cd;
+import static gr.jchrist.gitextender.GitExecutor.checkout;
+import static gr.jchrist.gitextender.GitExecutor.git;
+import static gr.jchrist.gitextender.GitExecutor.last;
+import static gr.jchrist.gitextender.GitExecutor.push;
+import static gr.jchrist.gitextender.GitExecutor.tac;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class GitTestUtil {
-
     public static void cloneRepo(@NotNull String source, @NotNull String destination, boolean bare) {
         cd(source);
         git("clone "+(bare ? "--bare " : "") + "-- . " + destination);
@@ -68,7 +72,12 @@ public class GitTestUtil {
         assertThat(vcsManager.getAllVcsRoots().length).isNotZero();
         GitRepositoryManager grm = GitUtil.getRepositoryManager(project);
 
-        GitRepository repository = grm.getRepositoryForRoot(file);
+        AtomicReference<GitRepository> ref = new AtomicReference<>();
+        AbstractIT.runOutOfEdt(() -> {
+            var repository = grm.getRepositoryForRoot(file);
+            ref.set(repository);
+        });
+        var repository = ref.get();
         assertThat(repository).as("Couldn't find repository for root " + root).isNotNull();
         return repository;
     }
@@ -106,25 +115,5 @@ public class GitTestUtil {
     @NotNull
     private static String tos(@NotNull Notification notification) {
         return notification.getTitle() + "|" + notification.getContent();
-    }
-
-    @SuppressWarnings("unchecked")
-    @NotNull
-    public static <T> T overrideProjectComponent(@NotNull Project project, Class<? super T> serviceInterface, Class<T> serviceImplementation) {
-        String key = serviceInterface.getName();
-        MutablePicoContainer picoContainer = (MutablePicoContainer) project.getPicoContainer();
-        picoContainer.unregisterComponent(key);
-        picoContainer.registerComponentImplementation(key, serviceImplementation);
-        return (T) project.getComponent(serviceInterface);
-    }
-
-    @SuppressWarnings("unchecked")
-    @NotNull
-    public static <T> T overrideService(Class<? super T> serviceInterface, Class<T> serviceImplementation) {
-        String key = serviceInterface.getName();
-        MutablePicoContainer picoContainer = (MutablePicoContainer) ApplicationManager.getApplication().getPicoContainer();
-        picoContainer.unregisterComponent(key);
-        picoContainer.registerComponentImplementation(key, serviceImplementation);
-        return (T) ServiceManager.getService(serviceInterface);
     }
 }

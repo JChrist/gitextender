@@ -1,6 +1,10 @@
 Changelog
 ---------
 
+
+## 0.8.0 (2023-12-14)
+* Fix no display name for configurable. Closes [#70](https://github.com/JChrist/gitextender/issues/70)
+
 ## 0.7.0 (2021-06-04)
 * Workaround issue with wrong thread creating the update tree, by disabling showing update tree
 
