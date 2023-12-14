@@ -21,7 +21,7 @@
         Currently, the correct list of file changes (updated, created, removed) will be displayed.
         However, when performing a diff for files in a branch other than the currently checked
         out, the diff will most probably be incorrect.<br/>
-        This plugin is available under <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>
+        This plugin is available under <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>
     ]]></description>
 
     <change-notes><![CDATA[

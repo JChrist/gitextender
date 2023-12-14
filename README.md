@@ -27,4 +27,4 @@ Currently, the correct list of file changes
 However, when performing a diff for files in a branch other than the currently checked
 out, the diff will most probably be incorrect.
 
-This plugin is available under [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+This plugin is available under [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
