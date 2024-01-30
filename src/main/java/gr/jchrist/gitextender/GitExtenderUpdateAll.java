@@ -19,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -122,13 +123,12 @@ public class GitExtenderUpdateAll extends AnAction {
         GitExtenderSettingsHandler settingsHandler = new GitExtenderSettingsHandler();
         final GitExtenderSettings settings = settingsHandler.loadSettings();
         this.updateCountDown = new CountDownLatch(repositories.size());
+        final var es = Executors.newFixedThreadPool(Math.min(repositories.size(), 3));
         repositories.forEach(repo ->
-                new Thread(new BackgroundableRepoUpdateTask(repo,
-                        VcsImplUtil.getShortVcsRootName(repo.getProject(), repo.getRoot()),
-                        settings, updateCountDown))
-                        .start());
+                es.submit(new BackgroundableRepoUpdateTask(repo, VcsImplUtil.getShortVcsRootName(repo.getProject(), repo.getRoot()),
+                        settings, updateCountDown)));
         UpdateExecutingBackgroundTask ubt = new UpdateExecutingBackgroundTask(project, "GitExtender Update All Repos",
-                accessToken, updateCountDown, executingFlag);
+                accessToken, updateCountDown, es, executingFlag);
         //ubt.queue();
         new Thread(ubt::queue).start();
     }
