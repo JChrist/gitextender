@@ -2,6 +2,9 @@ Changelog
 ---------
 
 
+## 0.8.1 (2024-01-30)
+* Limit number of threads for updates. Closes [#55](https://github.com/JChrist/gitextender/issues/55)
+
 ## 0.8.0 (2023-12-14)
 * Fix no display name for configurable. Closes [#70](https://github.com/JChrist/gitextender/issues/70)
 

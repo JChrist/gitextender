@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>gr.jchrist.gitextender</id>
     <name>Git Extender</name>
-    <version>0.8.0</version>
+    <version>0.8.1</version>
     <vendor email="io.christod@gmail.com" url="https://github.com/JChrist/gitextender">JChrist</vendor>
 
     <description><![CDATA[
@@ -26,6 +26,9 @@
 
     <change-notes><![CDATA[
         <ul>
+            <li>
+                0.8.1: Limit number of threads for updates. Closes [#55](https://github.com/JChrist/gitextender/issues/55)
+            </li>
             <li>
                 0.8.0: Fix no display name for configurable. Closes [#70](https://github.com/JChrist/gitextender/issues/70)
             </li>

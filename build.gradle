@@ -30,7 +30,7 @@ intellij {
 }*/
 
 group 'gr.jchrist'
-version '0.8.0'
+version '0.8.1'
 
 sourceCompatibility = '17'
 targetCompatibility = '17'
