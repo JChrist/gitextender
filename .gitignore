@@ -17,6 +17,8 @@ hs_err_pid*
 
 .idea_modules/
 
+.intellijPlatform/
+
 .gradle
 /build/
 

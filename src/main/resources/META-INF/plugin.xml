@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>gr.jchrist.gitextender</id>
     <name>Git Extender</name>
-    <version>0.8.0</version>
+    <version>0.8.2</version>
     <vendor email="io.christod@gmail.com" url="https://github.com/JChrist/gitextender">JChrist</vendor>
 
     <description><![CDATA[
@@ -9,23 +9,26 @@
         local branches tracking a remote for all git roots in the current project<br/>
         Local branches that will be updated are the branches that exist locally and have been configured
         to track a remote branch.<br/>
-        <p><strong>It requires IDE version 2020.3 or higher and Java 8+</strong></p>
+        <p><strong>It requires IDE version 2022.2 or higher and Java 17+</strong></p>
         It tries to fast-forward commits in remote branches to local branches.
         It can be configured through the settings to attempt a simple merge,
         if the local branch cannot be merged to the tracked remote using fast-forward only.
         In this case, if there are conflict errors, the merge will be aborted and an error notification will be shown.
         The update, then, should be performed manually for the reported branch, in order to resolve the conflicts.
         Any possible uncommitted changes to the current branch will be stashed<br/>
-        After updating a branch, if there were any file changes, they will be displayed in
-        IntelliJ Version Control tab.
-        Currently, the correct list of file changes (updated, created, removed) will be displayed.
-        However, when performing a diff for files in a branch other than the currently checked
-        out, the diff will most probably be incorrect.<br/>
+        After updating a branch, if there were any file changes, they will be displayed in IntelliJ Version Control tab.
+        <br/>
         This plugin is available under <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>
     ]]></description>
 
     <change-notes><![CDATA[
         <ul>
+            <li>
+                0.8.2: Update dependencies
+            </li>
+            <li>
+                0.8.1: Limit number of threads for updates. Closes [#55](https://github.com/JChrist/gitextender/issues/55)
+            </li>
             <li>
                 0.8.0: Fix no display name for configurable. Closes [#70](https://github.com/JChrist/gitextender/issues/70)
             </li>

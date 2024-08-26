@@ -189,10 +189,8 @@ public class RepositoryUpdater {
             //update the repo after all updates, in order to re-sync locals / remotes and changed files
             repo.update();
         }  catch (Exception e) {
-            logger.warn("exception trying to update repo: " + repo +
-                    " from thread:" + Thread.currentThread().getName(), e);
-            NotificationUtil.showErrorNotification("Git Extender update failed",
-                    getMessage(EXCEPTION_DURING_UPDATE, repoName, e.getMessage()));
+            logger.warn("exception trying to update repo: " + repo + " from thread:" + Thread.currentThread().getName(), e);
+            NotificationUtil.showErrorNotification("Git Extender update failed", getMessage(EXCEPTION_DURING_UPDATE, repoName, e.getMessage()));
         } finally {
             //now unstash, if we had stashed any changes
             if (repoChanges && !failureToAbort) {
