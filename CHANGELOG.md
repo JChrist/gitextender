@@ -2,6 +2,9 @@ Changelog
 ---------
 
 
+## 0.8.2 (2024-08-26)
+* Update intellij platform plugin and dependencies
+
 ## 0.8.1 (2024-01-30)
 * Limit number of threads for updates. Closes [#55](https://github.com/JChrist/gitextender/issues/55)
 

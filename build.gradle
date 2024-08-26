@@ -1,6 +1,6 @@
 plugins {
     id "java"
-    id "org.jetbrains.intellij" version "1.17.3"
+    id "org.jetbrains.intellij.platform" version "2.0.1"
     id "jacoco"
 }
 
@@ -9,45 +9,78 @@ repositories {
     maven {
         url = uri("https://packages.jetbrains.team/maven/p/ij/intellij-dependencies")
     }
+    intellijPlatform {
+        defaultRepositories()
+    }
 }
-
-intellij {
-    type = 'IC'
-//    version = "2022.2"
-    version = "LATEST-EAP-SNAPSHOT"
-    updateSinceUntilBuild = false
-    downloadSources = true
-    //comma separated list of plugins to depend on
-    plugins = ['Git4Idea']
-    pluginName = 'gitextender'
-}
-
-/*publishPlugin {
-    //no auto-publishing for now
-    username ''
-    password ''
-    channels 'alpha'
-}*/
 
 group 'gr.jchrist'
-version '0.8.1'
+version '0.8.2'
 
 sourceCompatibility = '17'
 targetCompatibility = '17'
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
+    intellijPlatform {
+        intellijIdeaCommunity('2024.2')
+        //intellijIdeaCommunity('LATEST-EAP-SNAPSHOT')
+        bundledPlugin 'Git4Idea'
+
+        instrumentationTools()
+
+        testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform.INSTANCE)
+    }
+
     testImplementation 'org.mockito:mockito-core:5.12.0'
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.assertj:assertj-core:3.25.3'
+    testImplementation 'org.assertj:assertj-core:3.26.3'
+    testImplementation 'org.opentest4j:opentest4j:1.3.0'
 }
 
-buildSearchableOptions.enabled=false
+intellijPlatform {
+//    type = 'IC'
+//    version = "2022.2"
+//    version = "LATEST-EAP-SNAPSHOT"
+    buildSearchableOptions = false
+
+    //comma separated list of plugins to depend on
+//    plugins = ['Git4Idea']
+//    pluginName = 'gitextender'
+    /*publishing {
+        //no auto-publishing for now
+        username ''
+        password ''
+        channels 'alpha'
+    }*/
+
+    pluginConfiguration {
+        id = 'gr.jchrist.gitextender'
+        name = 'Git Extender'
+        version = project.version
+        // patchPluginXml.enabled = false
+        ideaVersion {
+            sinceBuild = '222'
+            untilBuild = provider { null }
+        }
+        /*
+        description = 'It\'s an awesome plugin!'
+        changeNotes =
+        """
+        A descriptive release note...
+        """.stripIndent()
+
+        productDescriptor {
+            // ...
+        }
+        vendor {
+            // ...
+        }
+         */
+    }
+}
 
 jacocoTestReport {
+    classDirectories.setFrom(instrumentCode)
     reports {
         xml.required = true
         html.required = false

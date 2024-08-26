@@ -285,10 +285,11 @@ public class ProjectUpdateITest extends AbstractIT {
     }
 
     private void runUpdate() {
-        Boolean result = WriteCommandAction.runWriteCommandAction(super.getProject(),
-                (Computable<Boolean>) ()-> {updater.actionPerformed(event); return true;});
+        // Boolean result = WriteCommandAction.runWriteCommandAction(super.getProject(),
+        //         (Computable<Boolean>) ()-> {updater.actionPerformed(event); return true;});
+        updater.actionPerformed(event);
         waitForUpdateToFinish();
-        logger.info("update action performed. result:"+result);
+        logger.info("update action performed");
     }
 
     private void assertNoErrors() {
@@ -354,7 +355,7 @@ public class ProjectUpdateITest extends AbstractIT {
     private void waitForUpdateToFinish() {
         if (updater != null && updater.updateCountDown != null) {
             try {
-                updater.updateCountDown.await(1, TimeUnit.MINUTES);
+                updater.updateCountDown.await(10, TimeUnit.SECONDS);
                 int retries = 0;
                 while (updater.executingFlag.get() && retries < 100) {
                     TimeUnit.MILLISECONDS.sleep(100);

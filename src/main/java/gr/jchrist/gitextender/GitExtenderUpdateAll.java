@@ -1,25 +1,34 @@
 package gr.jchrist.gitextender;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.intellij.dvcs.DvcsUtil;
+import com.intellij.dvcs.repo.Repository;
 import com.intellij.notification.NotificationType;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.AccessToken;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.platform.ide.progress.TasksKt;
 import com.intellij.vcsUtil.VcsImplUtil;
+import git4idea.GitUtil;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 import gr.jchrist.gitextender.configuration.GitExtenderSettings;
 import gr.jchrist.gitextender.configuration.GitExtenderSettingsHandler;
 import gr.jchrist.gitextender.configuration.ProjectSettingsHandler;
 import gr.jchrist.gitextender.dialog.SelectModuleDialog;
+import kotlin.coroutines.Continuation;
+import kotlin.coroutines.CoroutineContext;
+import kotlin.coroutines.EmptyCoroutineContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -31,6 +40,11 @@ public class GitExtenderUpdateAll extends AnAction {
     private static final Logger logger = Logger.getInstance(GitExtenderUpdateAll.class);
     protected CountDownLatch updateCountDown;
     protected AtomicBoolean executingFlag = new AtomicBoolean(false);
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
+    }
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
@@ -123,14 +137,43 @@ public class GitExtenderUpdateAll extends AnAction {
         GitExtenderSettingsHandler settingsHandler = new GitExtenderSettingsHandler();
         final GitExtenderSettings settings = settingsHandler.loadSettings();
         this.updateCountDown = new CountDownLatch(repositories.size());
-        final var es = Executors.newFixedThreadPool(Math.min(repositories.size(), 3));
+        final var es = Executors.newFixedThreadPool(Math.min(repositories.size(), 3),
+                new ThreadFactoryBuilder().setNameFormat("gitextender-repo-updater-%d").build());
         repositories.forEach(repo ->
                 es.submit(new BackgroundableRepoUpdateTask(repo, VcsImplUtil.getShortVcsRootName(repo.getProject(), repo.getRoot()),
                         settings, updateCountDown)));
-        UpdateExecutingBackgroundTask ubt = new UpdateExecutingBackgroundTask(project, "GitExtender Update All Repos",
-                accessToken, updateCountDown, es, executingFlag);
-        //ubt.queue();
-        new Thread(ubt::queue).start();
+        TasksKt.withBackgroundProgress(project, "GitExtender Update All Repos", false, (cs, cont) -> {
+            try {
+                logger.debug("waiting for update to finish - " + Thread.currentThread().getName());
+                //10 minutes should be extreme enough to account for ALL updates
+                this.updateCountDown.await(10, TimeUnit.MINUTES);
+            } catch (Exception e) {
+                logger.warn("error awaiting update latch!", e);
+            }
+            try {
+                es.shutdownNow();
+            } catch (Exception e) {
+                logger.warn("error shutting down executor", e);
+            }
+            logger.debug("update finished - " + Thread.currentThread().getName());
+            //the last task finished should clean up, release project changes and show info notification
+            accessToken.finish();
+
+            // refresh vfs roots
+            GitUtil.refreshVfsInRoots(repositories.stream().map(Repository::getRoot).collect(Collectors.toList()));
+
+            NotificationUtil.showInfoNotification("Update Completed", "Git Extender updated all projects");
+            executingFlag.set(false);
+            return cont;
+        }, new Continuation<>() {
+            @Override
+            public @NotNull CoroutineContext getContext() {
+                return EmptyCoroutineContext.INSTANCE;
+            }
+
+            @Override
+            public void resumeWith(@NotNull Object o) {}
+        });
     }
 
     protected static List<GitRepository> getSelectedGitRepos(List<GitRepository> repos, List<String> selectedModules) {
