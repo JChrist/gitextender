@@ -38,20 +38,7 @@ dependencies {
 }
 
 intellijPlatform {
-//    type = 'IC'
-//    version = "2022.2"
-//    version = "LATEST-EAP-SNAPSHOT"
     buildSearchableOptions = false
-
-    //comma separated list of plugins to depend on
-//    plugins = ['Git4Idea']
-//    pluginName = 'gitextender'
-    /*publishing {
-        //no auto-publishing for now
-        username ''
-        password ''
-        channels 'alpha'
-    }*/
 
     pluginConfiguration {
         id = 'gr.jchrist.gitextender'
@@ -59,23 +46,9 @@ intellijPlatform {
         version = project.version
         // patchPluginXml.enabled = false
         ideaVersion {
-            sinceBuild = '222'
+            sinceBuild = '241'
             untilBuild = provider { null }
         }
-        /*
-        description = 'It\'s an awesome plugin!'
-        changeNotes =
-        """
-        A descriptive release note...
-        """.stripIndent()
-
-        productDescriptor {
-            // ...
-        }
-        vendor {
-            // ...
-        }
-         */
     }
 }
 
