@@ -24,7 +24,7 @@ jobs:
         java-version: 17
     - name: build
       run: ./gradlew check --stacktrace --info
-    - uses: codecov/codecov-action@v4
+    - uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
     - name: Collect Tests Result
