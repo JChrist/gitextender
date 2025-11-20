@@ -13,7 +13,7 @@ jobs:
         sudo rm -rf /usr/local/lib/android
         sudo rm -rf /opt/ghc
     - name: checkout
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
     # Validate wrapper
     - name: Gradle Wrapper Validation
       uses: gradle/wrapper-validation-action@v3
